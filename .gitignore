@@ -79,12 +79,28 @@ Desktop.ini
 *.local
 
 # ================================
-# Python junk (in case experiments happen)
+# Python & Backend (FastAPI)
 # ================================
 __pycache__/
 *.py[cod]
+*$py.class
+*.so
 .venv/
 venv/
+ENV/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+*.egg-info/
+.eggs/
+
+# Backend generated logs & data
+backend/data/contact_messages.json
+backend/venv/
+backend/.venv/
 
 # ================================
 # Generated media / exports
