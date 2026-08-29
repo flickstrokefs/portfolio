@@ -1,8 +1,10 @@
-﻿'use client'
+'use client'
 
+import { useEffect, useState } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
+import { fetchAcademic } from '@/lib/api'
 
-const DISCIPLINES = [
+const DEFAULT_DISCIPLINES = [
   { id: 'ds', num: '01', title: 'DATA STRUCTURES', subtitle: 'Algorithms · Complexity', accent: 'red', rot: -1.2 },
   { id: 'cv', num: '02', title: 'COMPUTER VISION', subtitle: 'Spatial Signal Processing', accent: 'amber', rot: 1.4 },
   { id: 'es', num: '03', title: 'EMBEDDED SYSTEMS', subtitle: 'Firmware · Hardware Control', accent: 'olive', rot: -0.9 },
@@ -11,6 +13,32 @@ const DISCIPLINES = [
 
 export default function AcademicPanel() {
   const shouldReduceMotion = useReducedMotion()
+  const [academicRecord, setAcademicRecord] = useState<any>(null)
+
+  useEffect(() => {
+    let isMounted = true
+    async function loadData() {
+      const data = await fetchAcademic()
+      if (isMounted && data) {
+        setAcademicRecord(data)
+      }
+    }
+    loadData()
+    return () => { isMounted = false }
+  }, [])
+
+  // Dynamic values powered by Backend with static fallbacks
+  const programme = academicRecord?.programme || 'B.Tech Artificial Intelligence & Machine Learning'
+  const institution = academicRecord?.institution || 'Lovely Professional University'
+  const registrationCode = academicRecord?.registration_code || 'REG: 2024-28-LPU'
+  const academicSpan = academicRecord?.academic_span || '2024 — 2028'
+  const currentYear = academicRecord?.current_year || 'YEAR 02 / 04'
+  const currentSemester = academicRecord?.current_semester ?? 4
+  const totalSemesters = academicRecord?.total_semesters ?? 8
+  const cgpa = academicRecord?.cgpa !== undefined ? Number(academicRecord.cgpa).toFixed(1) : '8.4'
+  const maxCgpa = academicRecord?.max_cgpa !== undefined ? Number(academicRecord.max_cgpa).toFixed(1) : '10.0'
+  const statusText = academicRecord?.status || 'VERIFIED / ACTIVE'
+  const disciplinesList = academicRecord?.disciplines || DEFAULT_DISCIPLINES
 
   return (
     <div className="academic-dossier-wrapper" aria-label="Academic Dossier and Active Disciplines">
@@ -82,7 +110,7 @@ export default function AcademicPanel() {
               <div className="programme-section">
                 <span className="field-label-coral mono">PROGRAMME</span>
                 <p className="programme-name serif">
-                  B.Tech Artificial Intelligence &amp; Machine Learning
+                  {programme}
                 </p>
               </div>
 
@@ -112,11 +140,11 @@ export default function AcademicPanel() {
               <div className="institution-header-row">
                 <div className="institution-details">
                   <span className="field-label-coral mono">INSTITUTION</span>
-                  <h4 className="institution-name serif">Lovely Professional University</h4>
+                  <h4 className="institution-name serif">{institution}</h4>
                 </div>
 
                 <div className="certified-stamp-badge" aria-label="Certified Entry Stamp">
-                  <span className="mono stamp-code">REG: 2024-28-LPU</span>
+                  <span className="mono stamp-code">{registrationCode}</span>
                   <strong className="mono stamp-title">CERTIFIED ENTRY</strong>
                 </div>
               </div>
@@ -127,15 +155,15 @@ export default function AcademicPanel() {
               <div className="academic-data-grid mono">
                 <div className="data-grid-cell">
                   <span className="cell-title">ACADEMIC SPAN</span>
-                  <strong className="cell-value">2024 — 2028</strong>
+                  <strong className="cell-value">{academicSpan}</strong>
                 </div>
                 <div className="data-grid-cell">
                   <span className="cell-title">CURRENT YEAR</span>
-                  <strong className="cell-value">YEAR 02 / 04</strong>
+                  <strong className="cell-value">{currentYear}</strong>
                 </div>
                 <div className="data-grid-cell">
                   <span className="cell-title">REGISTRATION</span>
-                  <strong className="cell-value highlight-coral">ACTIVE / ENROLLED</strong>
+                  <strong className="cell-value highlight-coral">{statusText}</strong>
                 </div>
                 <div className="data-grid-cell">
                   <span className="cell-title">STATUS</span>
@@ -149,12 +177,12 @@ export default function AcademicPanel() {
               <div className="position-timeline-block">
                 <span className="field-label-coral mono">CURRENT POSITION</span>
                 <div className="semesters-callout">
-                  <span className="count-num serif">04</span>
-                  <span className="count-denom mono">/ <span className="coral-accent">08</span> SEMESTERS</span>
+                  <span className="count-num serif">{String(currentSemester).padStart(2, '0')}</span>
+                  <span className="count-denom mono">/ <span className="coral-accent">{String(totalSemesters).padStart(2, '0')}</span> SEMESTERS</span>
                 </div>
 
-                {/* 8-Dot Timeline */}
-                <div className="semester-dots-timeline" aria-label="Semester progress: 4 of 8 semesters completed">
+                {/* Dynamic Semester Dots Timeline */}
+                <div className="semester-dots-timeline" aria-label={`Semester progress: ${currentSemester} of ${totalSemesters} semesters completed`}>
                   <div className="timeline-year-labels mono">
                     <span>YEAR 01</span>
                     <span>YEAR 02</span>
@@ -164,21 +192,24 @@ export default function AcademicPanel() {
                   <div className="timeline-dots-track">
                     <div className="timeline-track-line" />
                     <div className="dots-row">
-                      {[1, 2, 3, 4, 5, 6, 7, 8].map((sem) => (
-                        <div
-                          key={sem}
-                          className={`dot-station ${sem <= 4 ? 'filled' : 'hollow'} ${sem === 4 ? 'current-station' : ''}`}
-                        >
-                          <span className="dot-circle" />
-                          <span className="dot-num mono">{String(sem).padStart(2, '0')}</span>
-                          {sem === 4 && (
-                            <div className="here-pointer mono">
-                              <span className="pointer-triangle">▲</span>
-                              <span className="pointer-text">YOU ARE HERE</span>
-                            </div>
-                          )}
-                        </div>
-                      ))}
+                      {[...Array(totalSemesters)].map((_, idx) => {
+                        const sem = idx + 1
+                        return (
+                          <div
+                            key={sem}
+                            className={`dot-station ${sem <= currentSemester ? 'filled' : 'hollow'} ${sem === currentSemester ? 'current-station' : ''}`}
+                          >
+                            <span className="dot-circle" />
+                            <span className="dot-num mono">{String(sem).padStart(2, '0')}</span>
+                            {sem === currentSemester && (
+                              <div className="here-pointer mono">
+                                <span className="pointer-triangle">▲</span>
+                                <span className="pointer-text">YOU ARE HERE</span>
+                              </div>
+                            )}
+                          </div>
+                        )
+                      })}
                     </div>
                   </div>
                 </div>
@@ -191,8 +222,8 @@ export default function AcademicPanel() {
                 <div className="gpa-number-block">
                   <span className="field-label-coral mono">CUMULATIVE GPA</span>
                   <div className="gpa-figures">
-                    <span className="gpa-val serif">8.4</span>
-                    <span className="gpa-max mono">/ <span className="coral-accent">10.0</span></span>
+                    <span className="gpa-val serif">{cgpa}</span>
+                    <span className="gpa-max mono">/ <span className="coral-accent">{maxCgpa}</span></span>
                   </div>
                 </div>
 
@@ -212,31 +243,34 @@ export default function AcademicPanel() {
         <div className="active-disciplines-column">
           <div className="disciplines-header-strip">
             <span className="mono disciplines-title">ACTIVE DISCIPLINES</span>
-            <span className="mono disciplines-load-tag">FULL LOAD: 4/4</span>
+            <span className="mono disciplines-load-tag">FULL LOAD: {disciplinesList.length}/{disciplinesList.length}</span>
           </div>
 
           <div className="disciplines-tag-stack">
-            {DISCIPLINES.map((item) => (
-              <motion.div
-                key={item.id}
-                className={`discipline-file-card tab-${item.accent}`}
-                style={{ transform: `rotate(${item.rot}deg)` }}
-                whileHover={{ y: -3, scale: 1.01, transition: { duration: 0.18 } }}
-              >
-                <div className="card-main-body">
-                  <span className="card-index-num serif">{item.num}</span>
-                  <div className="card-title-group">
-                    <h4 className="card-subject-name serif">{item.title}</h4>
-                    <span className="card-subtitle mono">{item.subtitle}</span>
+            {disciplinesList.map((item: any, i: number) => {
+              const rotation = item.rot !== undefined ? item.rot : (i % 2 === 0 ? -1.2 + i * 0.3 : 1.4 - i * 0.3)
+              return (
+                <motion.div
+                  key={item.id || i}
+                  className={`discipline-file-card tab-${item.accent || 'red'}`}
+                  style={{ transform: `rotate(${rotation}deg)` }}
+                  whileHover={{ y: -3, scale: 1.01, transition: { duration: 0.18 } }}
+                >
+                  <div className="card-main-body">
+                    <span className="card-index-num serif">{item.num || String(i + 1).padStart(2, '0')}</span>
+                    <div className="card-title-group">
+                      <h4 className="card-subject-name serif">{item.title}</h4>
+                      <span className="card-subtitle mono">{item.subtitle}</span>
+                    </div>
                   </div>
-                </div>
 
-                <div className={`card-tab-edge color-${item.accent}`}>
-                  <span className="grommet-rivet" />
-                  <span className="vertical-tab-label mono">ACTIVE</span>
-                </div>
-              </motion.div>
-            ))}
+                  <div className={`card-tab-edge color-${item.accent || 'red'}`}>
+                    <span className="grommet-rivet" />
+                    <span className="vertical-tab-label mono">ACTIVE</span>
+                  </div>
+                </motion.div>
+              )
+            })}
           </div>
 
           {/* Sticky Note & Field Reference below stack */}
