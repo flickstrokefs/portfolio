@@ -25,6 +25,15 @@ if (typeof window !== 'undefined') {
     }
     origWarn.apply(console, args)
   }
+
+  const origError = console.error
+  console.error = (...args: any[]) => {
+    const msg = typeof args[0] === 'string' ? args[0] : (args[0]?.message || '')
+    if (typeof msg === 'string' && msg.includes('computeBoundingSphere(): Computed radius is NaN')) {
+      return
+    }
+    origError.apply(console, args)
+  }
 }
 
 function createStrapTexture(): THREE.CanvasTexture | null {
@@ -70,6 +79,16 @@ function createStrapTexture(): THREE.CanvasTexture | null {
   texture.anisotropy = 16
   texture.needsUpdate = true
   return texture
+}
+
+function distSq(
+  a: { x: number; y: number; z: number },
+  b: { x: number; y: number; z: number }
+): number {
+  const dx = a.x - b.x
+  const dy = a.y - b.y
+  const dz = a.z - b.z
+  return dx * dx + dy * dy + dz * dz
 }
 
 export default function Lanyard({ position = [0, 0, 18], gravity = [0, -40, 0], fov = 22, transparent = true }: { position?: [number, number, number]; gravity?: [number, number, number]; fov?: number; transparent?: boolean }) {
@@ -181,14 +200,40 @@ function Band({ maxSpeed = 50, minSpeed = 0, isMobile = false }: { maxSpeed?: nu
           Number.isFinite(j1.current.lerped.x) && Number.isFinite(j1.current.lerped.y) && Number.isFinite(j1.current.lerped.z) &&
           Number.isFinite(j2.current.lerped.x) && Number.isFinite(j2.current.lerped.y) && Number.isFinite(j2.current.lerped.z)
         ) {
-          curve.points[0].copy(j3Trans)
-          curve.points[1].copy(j2.current.lerped)
-          curve.points[2].copy(j1.current.lerped)
-          curve.points[3].copy(fixedTrans)
-          if (typeof band.current.geometry.setPoints === 'function') {
-            const rawPoints = curve.getPoints(isMobile ? 16 : 32)
-            if (rawPoints && rawPoints.length > 0 && rawPoints.every(p => p && Number.isFinite(p.x) && Number.isFinite(p.y) && Number.isFinite(p.z))) {
-              band.current.geometry.setPoints(rawPoints)
+          const p0 = j3Trans
+          const p1 = j2.current.lerped
+          const p2 = j1.current.lerped
+          const p3 = fixedTrans
+
+          if (
+            distSq(p0, p1) > 0.0001 &&
+            distSq(p1, p2) > 0.0001 &&
+            distSq(p2, p3) > 0.0001
+          ) {
+            curve.points[0].copy(p0)
+            curve.points[1].copy(p1)
+            curve.points[2].copy(p2)
+            curve.points[3].copy(p3)
+            curve.updateArcLengths()
+
+            if (typeof band.current.geometry?.setPoints === 'function') {
+              const rawPoints = curve.getPoints(isMobile ? 16 : 32)
+              const cleanPoints: THREE.Vector3[] = []
+              for (let i = 0; i < rawPoints.length; i++) {
+                const p = rawPoints[i]
+                if (p && Number.isFinite(p.x) && Number.isFinite(p.y) && Number.isFinite(p.z)) {
+                  if (cleanPoints.length === 0 || distSq(cleanPoints[cleanPoints.length - 1], p) > 0.0001) {
+                    cleanPoints.push(p)
+                  }
+                }
+              }
+              if (cleanPoints.length >= 2) {
+                try {
+                  band.current.geometry.setPoints(cleanPoints)
+                } catch {
+                  // Ignore rare transient step exceptions
+                }
+              }
             }
           }
         }
