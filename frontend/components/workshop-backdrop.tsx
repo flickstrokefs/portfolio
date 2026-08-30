@@ -4,7 +4,7 @@ export function WorkshopBackdrop({
   variant = 'hero',
   className = ''
 }: {
-  variant?: 'hero' | 'projects'
+  variant?: 'hero'
   className?: string
 }) {
   return (

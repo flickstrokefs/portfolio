@@ -2,27 +2,28 @@
 
 import { useEffect, useRef, useState } from 'react'
 
+const PRIMARY_NAME = 'SUDHANSHU VERMA'
+
 const INITIAL_SEQUENCE = [
-  'A POET',
-  'A DEVELOPER',
-  'A BUILDER',
+  'SUDHANSHU VERMA',
   'AI / ML STUDENT',
-  'SUDHANSHU VERMA'
+  'A BUILDER',
+  'A DEVELOPER',
+  'A POET'
 ]
 
 const ALL_PHRASES = [
-  'A POET',
-  'A DEVELOPER',
-  'A BUILDER',
-  'A PHOTOGRAPHER',
+  'SUDHANSHU VERMA',
   'AI / ML STUDENT',
+  'A BUILDER',
+  'A DEVELOPER',
+  'A PHOTOGRAPHER',
   'MUSIC ENTHUSIAST',
   'SYSTEMS THINKER',
   'PROBLEM SOLVER',
-  'SUDHANSHU VERMA'
+  'A POET'
 ]
 
-const PRIMARY_NAME = 'SUDHANSHU VERMA'
 const MAX_LENGTH = 16
 const CHAR_SET = ' ABCDEFGHIJKLMNOPQRSTUVWXYZ/0123456789'
 
@@ -35,9 +36,9 @@ function padCenter(str: string, len: number = MAX_LENGTH): string {
 }
 
 function getPhraseHoldDuration(phrase: string): number {
-  if (phrase === 'A POET') return 1800 // 1.5 - 2s
-  if (phrase === PRIMARY_NAME) return 8500 // 6 - 10s
-  return 3200 // 2.5 - 4s
+  if (phrase === PRIMARY_NAME) return 8000 // 8s for primary name
+  if (phrase === 'A POET') return 2200
+  return 3400
 }
 
 export function SplitFlapText({
@@ -47,7 +48,7 @@ export function SplitFlapText({
   text?: string
   className?: string
 }) {
-  const initialText = text || INITIAL_SEQUENCE[0]
+  const initialText = text || PRIMARY_NAME
   const [currentPhrase, setCurrentPhrase] = useState(initialText)
   const [displayChars, setDisplayChars] = useState<string[]>(() =>
     padCenter(initialText).split('')
@@ -73,10 +74,9 @@ export function SplitFlapText({
       const startChar = currentChars[index] || ' '
       if (startChar === targetChar) return
 
-      // Slower mechanical clicks (4 to 7 intermediate flips per changing tile)
+      // Mechanical clicks (4 to 7 intermediate flips per changing tile)
       const numSteps = 4 + Math.floor(Math.random() * 4)
-      // Small natural cascading stagger across columns
-      const staggerDelay = index * 75 + Math.floor(Math.random() * 30)
+      const staggerDelay = index * 60 + Math.floor(Math.random() * 25)
 
       const stepChars: string[] = []
       for (let s = 1; s < numSteps; s++) {
@@ -85,8 +85,7 @@ export function SplitFlapText({
       stepChars.push(targetChar)
 
       stepChars.forEach((nextChar, stepIndex) => {
-        // Deliberate, tactile mechanical pace (150ms per flip)
-        const stepDelay = staggerDelay + stepIndex * 150
+        const stepDelay = staggerDelay + stepIndex * 130
         if (stepDelay > maxStepTime) maxStepTime = stepDelay
 
         const timeout = setTimeout(() => {
@@ -107,7 +106,7 @@ export function SplitFlapText({
               next[index] = false
               return next
             })
-          }, 125)
+          }, 110)
           timeoutsRef.current.push(clearAnimTimeout)
         }, stepDelay)
         timeoutsRef.current.push(timeout)
@@ -120,7 +119,7 @@ export function SplitFlapText({
       isTransitioningRef.current = false
       setCurrentPhrase(targetText)
       if (onComplete) onComplete()
-    }, maxStepTime + 180)
+    }, maxStepTime + 160)
     timeoutsRef.current.push(finalTimeout)
   }
 
@@ -129,18 +128,15 @@ export function SplitFlapText({
 
     const scheduleRandomNext = (lastPhrase: string) => {
       if (!isMounted) return
-      // Random interval between 8 and 20 seconds
-      const nextDelay = 8000 + Math.floor(Math.random() * 12000)
+      const nextDelay = 7000 + Math.floor(Math.random() * 10000)
       const timer = setTimeout(() => {
         if (!isMounted) return
         let nextPhrase = PRIMARY_NAME
         if (lastPhrase === PRIMARY_NAME) {
-          // Choose one of the secondary phrases
           const secondary = ALL_PHRASES.filter(p => p !== PRIMARY_NAME)
           nextPhrase = secondary[Math.floor(Math.random() * secondary.length)]
         } else {
-          // 50% chance to return to PRIMARY_NAME, 50% chance to pick another secondary
-          if (Math.random() < 0.5) {
+          if (Math.random() < 0.6) {
             nextPhrase = PRIMARY_NAME
           } else {
             const secondary = ALL_PHRASES.filter(p => p !== lastPhrase && p !== PRIMARY_NAME)
@@ -155,13 +151,7 @@ export function SplitFlapText({
       timeoutsRef.current.push(timer)
     }
 
-    // Step through the initial sequence:
-    // 1. "A POET" (1.8s)
-    // 2. "A DEVELOPER" (3.2s)
-    // 3. "A BUILDER" (3.2s)
-    // 4. "AI / ML STUDENT" (3.2s)
-    // 5. "SUDHANSHU VERMA" (8.5s) -> then random rotation
-    const runInitialSequence = (stepIndex: number) => {
+    const runSequence = (stepIndex: number) => {
       if (!isMounted) return
       const current = INITIAL_SEQUENCE[stepIndex]
       const holdTime = getPhraseHoldDuration(current)
@@ -172,7 +162,7 @@ export function SplitFlapText({
         if (nextIndex < INITIAL_SEQUENCE.length) {
           const next = INITIAL_SEQUENCE[nextIndex]
           flipTo(next, () => {
-            runInitialSequence(nextIndex)
+            runSequence(nextIndex)
           })
         } else {
           scheduleRandomNext(PRIMARY_NAME)
@@ -181,7 +171,8 @@ export function SplitFlapText({
       timeoutsRef.current.push(timer)
     }
 
-    runInitialSequence(0)
+    // Start rotation after initial hold on primary name
+    runSequence(0)
 
     return () => {
       isMounted = false
