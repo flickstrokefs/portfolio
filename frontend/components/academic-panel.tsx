@@ -30,8 +30,8 @@ export default function AcademicPanel() {
   // Dynamic values powered by Backend with static fallbacks
   const programme = academicRecord?.programme || 'B.Tech Artificial Intelligence & Machine Learning'
   const institution = academicRecord?.institution || 'Lovely Professional University'
-  const registrationCode = academicRecord?.registration_code || 'REG: 2024-28-LPU'
-  const academicSpan = academicRecord?.academic_span || '2024 — 2028'
+  const registrationCode = academicRecord?.registration_code || 'REG: 12510414'
+  const academicSpan = academicRecord?.academic_span || '2025 — 2029'
   const currentYear = academicRecord?.current_year || 'YEAR 02 / 04'
   const currentSemester = academicRecord?.current_semester ?? 4
   const totalSemesters = academicRecord?.total_semesters ?? 8
@@ -51,7 +51,7 @@ export default function AcademicPanel() {
           <span className="telemetry-item highlight">REPORT ACTIVE</span>
         </div>
         <div className="status-right">
-          <span>ARCHIVE REF: DOSSIER-2024-28 // CLASSIFIED RECORD</span>
+          <span>ARCHIVE REF: DOSSIER-2025-29 // CLASSIFIED RECORD</span>
         </div>
       </div>
 

@@ -23,17 +23,17 @@ import Lanyard from './lanyard'
 import WorkshopBackdrop from './workshop-backdrop'
 import AcademicPanel from './academic-panel'
 import ToolboxSchematic from './toolbox-schematic'
+import ExperimentArchive from './experiment-archive'
+import TargetCursor from './target-cursor'
+import BulletinBoard from './bulletin-board'
 
 const reveal = { hidden: { opacity: 0, y: 18 }, visible: { opacity: 1, y: 0, transition: { duration: .45 } } }
 function Section({ id, label, title, children, blueprint = false }: { id: string; label: string; title: string; children: React.ReactNode; blueprint?: boolean }) { return <motion.section id={id} initial="hidden" whileInView="visible" viewport={{ once: true, amount: .12 }} variants={reveal} className={`notebook-section section-contained ${blueprint ? 'blueprint' : 'paper'}`}><div className="section-inner"><div className="section-kicker"><span>{label}</span><span className="section-rule" /></div><h2>{title}</h2>{children}</div></motion.section> }
-function Diagram({ accent }: { accent: Project['accent'] }) { return <div className={`diagram ${accent}`} aria-label="System map diagram"><svg viewBox="0 0 500 170" role="img"><path d="M20 85h80M100 85l25-45M100 85l25 45M125 40h80M125 130h80M205 40l28 45-28 45M233 85h80M313 85l30-35M313 85l30 35M343 50h115M343 120h115" /><circle cx="20" cy="85" r="6" /><circle cx="458" cy="50" r="6" /><circle cx="458" cy="120" r="6" /><rect x="205" y="55" width="56" height="60" rx="2" /></svg><span className="diagram-label">[ REFERENCE IMAGE / SYSTEM MAP ]</span></div> }
-function CaseFile({ project, onClose }: { project: Project; onClose: () => void }) { return <motion.div className="case-file" initial={{ opacity: 0, y: 12, scale: .98 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 12 }} role="dialog" aria-label={`${project.title} case file`}><button className="case-close" onClick={onClose} aria-label="Close case file"><X /></button><div className="case-clip">CASE FILE / {project.code}</div><h3>{project.title}</h3><p><span>OBJECTIVE //</span> {project.objective}</p><Diagram accent={project.accent} /><div className="evidence-grid"><div><span>TOOLS / STACK</span><p className="mono">{project.tools.join(' · ')}</p></div><div><span>CONTRIBUTION</span><p>{project.contribution}</p></div><div><span>OUTCOME</span><p>{project.outcome}</p></div><div><span>KEY LEARNING</span><p>{project.learning}</p></div></div><a href="#contact" className="seal">GITHUB CROSS-REFERENCE <ArrowUpRight /></a></motion.div> }
-function ProjectLog({ project, active, setActive }: { project: Project; active: string | null; setActive: (id: string | null) => void }) { const open = active === project.id; return <article className={`experiment folder-log ${project.accent} ${open ? 'hover-open' : ''}`} onMouseEnter={() => setActive(project.id)} onMouseLeave={() => setActive(null)}><div className="folder-tab"><span className="mono code">{project.code}</span><span className="mono">{open ? 'CASE FILE OPEN' : 'HOVER TO PEEK'}</span></div><div className="folder-face"><h3>{project.title}</h3><p className="objective">{project.objective}</p><button className="folder-touch" onClick={() => setActive(open ? null : project.id)} aria-expanded={open}>{open ? 'Close file' : 'Open case file'} <ArrowUpRight /></button></div><AnimatePresence>{open && <CaseFile project={project} onClose={() => setActive(null)} />}</AnimatePresence></article> }
-function BulletinBoard({ profile }: { profile: typeof staticProfile }) { const notes = [['GITHUB', profile.github], ['LINKEDIN', profile.linkedin], ['CODING', profile.coding], ['RESUME', 'PDF / available soon'], ['EMAIL', 'signal@slab.dev']]; return <div className="bulletin-board">{notes.map(([label, value], i) => <motion.a drag dragConstraints="parent" dragElastic={.08} whileDrag={{ scale: 1.03, rotate: 0 }} href={label === 'EMAIL' ? 'mailto:signal@slab.dev' : `https://${value}`} className={`pin-note note-${i + 1}`} key={label}><span className="thumbtack" /><span className="mono">{label}</span><strong>{value}</strong><small>move me ↗</small></motion.a>)}</div> }
 
 export function LabNotebook() {
   const [status, setStatus] = useState('')
   const [active, setActive] = useState<string | null>(null)
+  const [isInsideProjects, setIsInsideProjects] = useState(false)
   const reduceMotion = useReducedMotion()
 
   const [profileData, setProfileData] = useState(staticProfile)
@@ -152,20 +152,40 @@ export function LabNotebook() {
         <ToolboxSchematic />
       </Section>
 
-      <Section id="projects" label="04 / EXPERIMENT LOGS" title="Things I have tried to make." blueprint>
-        <div className="projects-intro">
-          <p>Active project records served directly from FastAPI backend.</p>
-          <span className="mono">HOVER OR TAP A FOLDER ↘</span>
-        </div>
-        <div className="projects-container">
-          <WorkshopBackdrop variant="projects" />
-          <div className="project-stack">
-            {projectsList.map(project => (
-              <ProjectLog project={project} key={project.id} active={active} setActive={setActive} />
-            ))}
+      <motion.section
+        id="projects"
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.12 }}
+        variants={reveal}
+        className="notebook-section section-contained blueprint"
+        onMouseEnter={() => setIsInsideProjects(true)}
+        onMouseLeave={() => setIsInsideProjects(false)}
+      >
+        <div className="section-inner">
+          <div className="section-kicker">
+            <span>04 / EXPERIMENT LOGS</span>
+            <span className="section-rule" />
           </div>
+          <h2>Things I have tried to make.</h2>
+          <div className="projects-intro">
+            <p>Active project records served directly from FastAPI backend.</p>
+            <span className="mono">CLICK OR TAP A FOLDER TO INSPECT FILE ↘</span>
+          </div>
+          <ExperimentArchive projects={projectsList} />
         </div>
-      </Section>
+        {isInsideProjects && (
+          <TargetCursor
+            targetSelector=".cursor-target"
+            spinDuration={2}
+            hideDefaultCursor={true}
+            hoverDuration={0.2}
+            parallaxOn={true}
+            cursorColor="#f4efdf"
+            cursorColorOnTarget="#cf4a45"
+          />
+        )}
+      </motion.section>
 
       <Section id="practice" label="05 / PRACTICE DATA" title="Repetition is a feature.">
         <p className="section-lede">Find the work, the half-built ideas, and the clean commits on the board.</p>
