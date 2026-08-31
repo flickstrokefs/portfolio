@@ -10,15 +10,15 @@ This document provides a comprehensive mapping of all API endpoints across the *
 +-----------------------------------------------------------------------------------+
 |                               NEXT.JS FRONTEND                                    |
 |                                                                                   |
-|  [Client Components] -> frontend/lib/api.ts -> fetch('http://localhost:8000/...') |
+|  [Client Components] -> frontend/lib/api.ts -> https://portfolio-iu86.onrender.com|
 |  [Contact Form]     -> POST /api/contact    -> Next.js Route Proxy                |
 +-----------------------------------------------------------------------------------+
                                        |
                                        v  HTTP Requests (JSON)
 +-----------------------------------------------------------------------------------+
-|                               FASTAPI BACKEND                                     |
+|                               FASTAPI BACKEND (Render)                            |
 |                                                                                   |
-|  http://localhost:8000/api/v1/...                                                 |
+|  https://portfolio-iu86.onrender.com/api/v1/... (or localhost:8000 for local dev) |
 |  - Routers: profile.py, projects.py, skills.py, contact.py                        |
 |  - Data Stores: backend/data/content.json & contact_messages.json                |
 +-----------------------------------------------------------------------------------+

@@ -99,7 +99,7 @@ export function LabNotebook() {
           <a href="#contact">Contact</a>
         </div>
         <span className="mono nav-status">
-          {backendConnected ? '● FASTAPI LIVE / 8000' : '● ONLINE / 26'}
+          {backendConnected ? '● FASTAPI LIVE / CLOUD' : '● ONLINE / 26'}
         </span>
       </nav>
 

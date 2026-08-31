@@ -6,7 +6,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
   }
 
-  const backendUrl = process.env.BACKEND_API_URL || 'http://localhost:8000'
+  const backendUrl = process.env.BACKEND_API_URL || 'https://portfolio-iu86.onrender.com'
 
   try {
     const res = await fetch(`${backendUrl}/api/v1/contact`, {
