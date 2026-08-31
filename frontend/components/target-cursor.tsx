@@ -1,6 +1,7 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import gsap from 'gsap'
 
 interface TargetCursorProps {
@@ -17,11 +18,12 @@ export default function TargetCursor({
   targetSelector = '.cursor-target',
   spinDuration = 2,
   hideDefaultCursor = true,
-  hoverDuration = 0.2,
+  hoverDuration = 0.15,
   parallaxOn = true,
   cursorColor = '#f4efdf',
   cursorColorOnTarget = '#cf4a45'
 }: TargetCursorProps) {
+  const [mounted, setMounted] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
   const reticleRef = useRef<HTMLDivElement>(null)
   const tlRef = useRef<HTMLSpanElement>(null)
@@ -31,7 +33,11 @@ export default function TargetCursor({
   const dotRef = useRef<HTMLSpanElement>(null)
 
   useEffect(() => {
-    if (typeof window === 'undefined') return
+    setMounted(true)
+  }, [])
+
+  useEffect(() => {
+    if (!mounted || typeof window === 'undefined') return
 
     const origCursor = document.body.style.cursor
     if (hideDefaultCursor) {
@@ -55,7 +61,7 @@ export default function TargetCursor({
     let currentTarget: HTMLElement | null = null
     let hasMoved = false
 
-    // Idle Spin Animation
+    // Idle Spin Animation for corners
     const spinTween = gsap.to(reticle, {
       rotation: '+=360',
       duration: spinDuration,
@@ -65,9 +71,9 @@ export default function TargetCursor({
     })
 
     // Default rest state offsets (from center)
-    const baseSize = 16
+    const baseSize = 14
 
-    const resetCorners = (duration = 0.2) => {
+    const resetCorners = (duration = 0.15) => {
       gsap.to(tl, { x: -baseSize, y: -baseSize, borderColor: cursorColor, duration, ease: 'power2.out' })
       gsap.to(tr, { x: baseSize, y: -baseSize, borderColor: cursorColor, duration, ease: 'power2.out' })
       gsap.to(br, { x: baseSize, y: baseSize, borderColor: cursorColor, duration, ease: 'power2.out' })
@@ -83,28 +89,36 @@ export default function TargetCursor({
       spinTween.pause()
 
       const rect = target.getBoundingClientRect()
-      const pad = 10
-      const centerX = rect.left + rect.width / 2
-      const centerY = rect.top + rect.height / 2
-      const halfW = rect.width / 2 + pad
-      const halfH = rect.height / 2 + pad
+      
+      // Guard against large container targets pulling the cursor away
+      const isCompact = rect.width <= 260 && rect.height <= 120
+      const pad = 6
+      const halfW = isCompact ? Math.min(rect.width / 2 + pad, 130) : 24
+      const halfH = isCompact ? Math.min(rect.height / 2 + pad, 60) : 24
 
-      const targetX = parallaxOn ? centerX + (clientX - centerX) * 0.08 : centerX
-      const targetY = parallaxOn ? centerY + (clientY - centerY) * 0.08 : centerY
+      if (isCompact) {
+        const centerX = rect.left + rect.width / 2
+        const centerY = rect.top + rect.height / 2
+        const targetX = parallaxOn ? clientX + (centerX - clientX) * 0.35 : centerX
+        const targetY = parallaxOn ? clientY + (centerY - clientY) * 0.35 : centerY
 
-      gsap.to(reticle, {
-        x: targetX,
-        y: targetY,
-        rotation: 0,
-        duration: hoverDuration,
-        ease: 'power3.out'
-      })
+        gsap.to(reticle, {
+          x: targetX,
+          y: targetY,
+          rotation: 0,
+          duration: hoverDuration,
+          ease: 'power2.out'
+        })
+      } else {
+        // Direct tracking with zero offset for larger targets
+        gsap.set(reticle, { x: clientX, y: clientY, rotation: 0 })
+      }
 
-      gsap.to(tl, { x: -halfW, y: -halfH, borderColor: cursorColorOnTarget, duration: hoverDuration, ease: 'power3.out' })
-      gsap.to(tr, { x: halfW, y: -halfH, borderColor: cursorColorOnTarget, duration: hoverDuration, ease: 'power3.out' })
-      gsap.to(br, { x: halfW, y: halfH, borderColor: cursorColorOnTarget, duration: hoverDuration, ease: 'power3.out' })
-      gsap.to(bl, { x: -halfW, y: halfH, borderColor: cursorColorOnTarget, duration: hoverDuration, ease: 'power3.out' })
-      gsap.to(dot, { opacity: 0.35, backgroundColor: cursorColorOnTarget, scale: 0.8, duration: hoverDuration })
+      gsap.to(tl, { x: -halfW, y: -halfH, borderColor: cursorColorOnTarget, duration: hoverDuration, ease: 'power2.out' })
+      gsap.to(tr, { x: halfW, y: -halfH, borderColor: cursorColorOnTarget, duration: hoverDuration, ease: 'power2.out' })
+      gsap.to(br, { x: halfW, y: halfH, borderColor: cursorColorOnTarget, duration: hoverDuration, ease: 'power2.out' })
+      gsap.to(bl, { x: -halfW, y: halfH, borderColor: cursorColorOnTarget, duration: hoverDuration, ease: 'power2.out' })
+      gsap.to(dot, { opacity: 0.4, backgroundColor: cursorColorOnTarget, scale: 0.85, duration: hoverDuration })
     }
 
     const unlockFromTarget = (clientX: number, clientY: number) => {
@@ -112,12 +126,7 @@ export default function TargetCursor({
       currentTarget = null
       resetCorners(hoverDuration)
       spinTween.play()
-      gsap.to(reticle, {
-        x: clientX,
-        y: clientY,
-        duration: 0.12,
-        ease: 'power2.out'
-      })
+      gsap.set(reticle, { x: clientX, y: clientY })
     }
 
     const onMouseMove = (e: MouseEvent) => {
@@ -126,7 +135,7 @@ export default function TargetCursor({
       if (!hasMoved) {
         hasMoved = true
         gsap.set(reticle, { x: clientX, y: clientY })
-        gsap.to(container, { opacity: 1, duration: 0.15 })
+        gsap.to(container, { opacity: 1, duration: 0.1 })
       }
 
       const elementUnder = document.elementFromPoint(clientX, clientY)
@@ -135,27 +144,25 @@ export default function TargetCursor({
       if (target) {
         if (target !== currentTarget) {
           lockOnTarget(target, clientX, clientY)
-        } else if (parallaxOn) {
+        } else {
           const rect = target.getBoundingClientRect()
-          const centerX = rect.left + rect.width / 2
-          const centerY = rect.top + rect.height / 2
-          gsap.to(reticle, {
-            x: centerX + (clientX - centerX) * 0.08,
-            y: centerY + (clientY - centerY) * 0.08,
-            duration: 0.15,
-            ease: 'power2.out'
-          })
+          const isCompact = rect.width <= 260 && rect.height <= 120
+          if (isCompact && parallaxOn) {
+            const centerX = rect.left + rect.width / 2
+            const centerY = rect.top + rect.height / 2
+            const targetX = clientX + (centerX - clientX) * 0.35
+            const targetY = clientY + (centerY - clientY) * 0.35
+            gsap.set(reticle, { x: targetX, y: targetY })
+          } else {
+            gsap.set(reticle, { x: clientX, y: clientY })
+          }
         }
       } else {
         if (isHoveringTarget) {
           unlockFromTarget(clientX, clientY)
         } else {
-          gsap.to(reticle, {
-            x: clientX,
-            y: clientY,
-            duration: 0.08,
-            ease: 'power2.out'
-          })
+          // Pure zero-lag 1:1 mouse tracking
+          gsap.set(reticle, { x: clientX, y: clientY })
         }
       }
     }
@@ -169,9 +176,11 @@ export default function TargetCursor({
         document.body.style.cursor = origCursor
       }
     }
-  }, [targetSelector, spinDuration, hideDefaultCursor, hoverDuration, parallaxOn, cursorColor, cursorColorOnTarget])
+  }, [mounted, targetSelector, spinDuration, hideDefaultCursor, hoverDuration, parallaxOn, cursorColor, cursorColorOnTarget])
 
-  return (
+  if (!mounted || typeof document === 'undefined') return null
+
+  return createPortal(
     <div
       ref={containerRef}
       className="target-cursor-wrapper"
@@ -184,6 +193,7 @@ export default function TargetCursor({
         <span ref={blRef} className="reticle-corner corner-bl" />
         <span ref={dotRef} className="reticle-center-dot" />
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }

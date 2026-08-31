@@ -351,7 +351,7 @@ export default function ExperimentArchive({ projects }: { projects: Project[] })
                 return (
                   <motion.div
                     key={project.id}
-                    className={`physical-folder-object tab-color-${project.accent} ${tabOffsetClass} cursor-target`}
+                    className={`physical-folder-object tab-color-${project.accent} ${tabOffsetClass}`}
                     onClick={() => handleSelect(project.id)}
                     whileHover={shouldReduceMotion ? {} : { y: -6, rotate: isOdd ? 0.6 : -0.6, scale: 1.01 }}
                     transition={{ duration: 0.18 }}
@@ -366,7 +366,7 @@ export default function ExperimentArchive({ projects }: { projects: Project[] })
                     }}
                   >
                     {/* Manila Folder Tab Ear */}
-                    <div className={`folder-tab-ear tab-color-${project.accent}`}>
+                    <div className={`folder-tab-ear tab-color-${project.accent} cursor-target`}>
                       <span className="folder-exp-code">{project.code}</span>
                       <span className="folder-tab-name">{project.title}</span>
                       <span className="tab-open-indicator">↗ INSPECT</span>
@@ -397,7 +397,7 @@ export default function ExperimentArchive({ projects }: { projects: Project[] })
                             <span key={tIdx} className="mini-tag">{tool}</span>
                           ))}
                         </div>
-                        <div className="inspect-cue mono">
+                        <div className="inspect-cue mono cursor-target">
                           <span>INSPECT FILE</span>
                           <ArrowUpRight size={13} />
                         </div>
