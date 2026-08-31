@@ -1,44 +1,31 @@
 'use client'
 
-import { useEffect, useState } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
-import { fetchAcademic } from '@/lib/api'
+import { type Academic } from '@/data/content'
 
-const DEFAULT_DISCIPLINES = [
-  { id: 'ds', num: '01', title: 'DATA STRUCTURES', subtitle: 'Algorithms · Complexity', accent: 'red', rot: -1.2 },
-  { id: 'cv', num: '02', title: 'COMPUTER VISION', subtitle: 'Spatial Signal Processing', accent: 'amber', rot: 1.4 },
-  { id: 'es', num: '03', title: 'EMBEDDED SYSTEMS', subtitle: 'Firmware · Hardware Control', accent: 'olive', rot: -0.9 },
-  { id: 'hci', num: '04', title: 'HUMAN-COMPUTER INT.', subtitle: 'Ergonomics · Interface Models', accent: 'slate', rot: 1.1 },
-]
+const ACCENTS = ['red', 'amber', 'olive', 'slate']
 
-export default function AcademicPanel() {
+interface AcademicPanelProps {
+  academic: Academic
+}
+
+export default function AcademicPanel({ academic }: AcademicPanelProps) {
   const shouldReduceMotion = useReducedMotion()
-  const [academicRecord, setAcademicRecord] = useState<any>(null)
 
-  useEffect(() => {
-    let isMounted = true
-    async function loadData() {
-      const data = await fetchAcademic()
-      if (isMounted && data) {
-        setAcademicRecord(data)
-      }
-    }
-    loadData()
-    return () => { isMounted = false }
-  }, [])
-
-  // Dynamic values powered by Backend with static fallbacks
-  const programme = academicRecord?.programme || 'B.Tech Artificial Intelligence & Machine Learning'
-  const institution = academicRecord?.institution || 'Lovely Professional University'
-  const registrationCode = academicRecord?.registration_code || 'REG: 12510414'
-  const academicSpan = academicRecord?.academic_span || '2025 — 2029'
-  const currentYear = academicRecord?.current_year || 'YEAR 02 / 04'
-  const currentSemester = academicRecord?.current_semester ?? 4
-  const totalSemesters = academicRecord?.total_semesters ?? 8
-  const cgpa = academicRecord?.cgpa !== undefined ? Number(academicRecord.cgpa).toFixed(1) : '8.4'
-  const maxCgpa = academicRecord?.max_cgpa !== undefined ? Number(academicRecord.max_cgpa).toFixed(1) : '10.0'
-  const statusText = academicRecord?.status || 'VERIFIED / ACTIVE'
-  const disciplinesList = academicRecord?.disciplines || DEFAULT_DISCIPLINES
+  const programme = academic?.programme || 'B.Tech Artificial Intelligence & Machine Learning'
+  const institution = academic?.institution || 'Lovely Professional University'
+  const registrationCode = academic?.registration_code || '2024-28-LPU'
+  const academicSpan = academic ? `${academic.academic_span_start} — ${academic.academic_span_end}` : '2024 — 2028'
+  const currentYearNum = academic?.current_semester ? Math.ceil(academic.current_semester / 2) : 2
+  const totalYearsNum = academic?.total_semesters ? Math.ceil(academic.total_semesters / 2) : 4
+  const currentYear = `YEAR ${String(currentYearNum).padStart(2, '0')} / ${String(totalYearsNum).padStart(2, '0')}`
+  const currentSemester = academic?.current_semester ?? 4
+  const totalSemesters = academic?.total_semesters ?? 8
+  const cgpa = academic?.cgpa !== undefined ? Number(academic.cgpa).toFixed(1) : '9.3'
+  const maxCgpa = academic?.cgpa_scale !== undefined ? Number(academic.cgpa_scale).toFixed(1) : '10.0'
+  const registrationStatus = academic?.registration_status || 'ACTIVE'
+  const recordStatus = academic?.record_status || 'VERIFIED'
+  const disciplinesList = academic?.disciplines || []
 
   return (
     <div className="academic-dossier-wrapper" aria-label="Academic Dossier and Active Disciplines">
@@ -51,7 +38,7 @@ export default function AcademicPanel() {
           <span className="telemetry-item highlight">REPORT ACTIVE</span>
         </div>
         <div className="status-right">
-          <span>ARCHIVE REF: DOSSIER-2025-29 // CLASSIFIED RECORD</span>
+          <span>ARCHIVE REF: {registrationCode} // CLASSIFIED RECORD</span>
         </div>
       </div>
 
@@ -145,7 +132,7 @@ export default function AcademicPanel() {
 
                 <div className="certified-stamp-badge" aria-label="Certified Entry Stamp">
                   <span className="mono stamp-code">{registrationCode}</span>
-                  <strong className="mono stamp-title">CERTIFIED ENTRY</strong>
+                  <strong className="mono stamp-title">{recordStatus} ENTRY</strong>
                 </div>
               </div>
 
@@ -163,11 +150,11 @@ export default function AcademicPanel() {
                 </div>
                 <div className="data-grid-cell">
                   <span className="cell-title">REGISTRATION</span>
-                  <strong className="cell-value highlight-coral">{statusText}</strong>
+                  <strong className="cell-value highlight-coral">{registrationStatus}</strong>
                 </div>
                 <div className="data-grid-cell">
                   <span className="cell-title">STATUS</span>
-                  <strong className="cell-value highlight-green">VERIFIED</strong>
+                  <strong className="cell-value highlight-green">{recordStatus}</strong>
                 </div>
               </div>
 
@@ -247,24 +234,26 @@ export default function AcademicPanel() {
           </div>
 
           <div className="disciplines-tag-stack">
-            {disciplinesList.map((item: any, i: number) => {
-              const rotation = item.rot !== undefined ? item.rot : (i % 2 === 0 ? -1.2 + i * 0.3 : 1.4 - i * 0.3)
+            {disciplinesList.map((item, i: number) => {
+              const rotation = i % 2 === 0 ? -1.2 + i * 0.3 : 1.4 - i * 0.3
+              const accentColor = ACCENTS[i % ACCENTS.length]
+              const title = item.name
               return (
                 <motion.div
-                  key={item.id || i}
-                  className={`discipline-file-card tab-${item.accent || 'red'}`}
+                  key={i}
+                  className={`discipline-file-card tab-${accentColor}`}
                   style={{ transform: `rotate(${rotation}deg)` }}
                   whileHover={{ y: -3, scale: 1.01, transition: { duration: 0.18 } }}
                 >
                   <div className="card-main-body">
-                    <span className="card-index-num serif">{item.num || String(i + 1).padStart(2, '0')}</span>
+                    <span className="card-index-num serif">{String(i + 1).padStart(2, '0')}</span>
                     <div className="card-title-group">
-                      <h4 className="card-subject-name serif">{item.title}</h4>
+                      <h4 className="card-subject-name serif">{title}</h4>
                       <span className="card-subtitle mono">{item.subtitle}</span>
                     </div>
                   </div>
 
-                  <div className={`card-tab-edge color-${item.accent || 'red'}`}>
+                  <div className={`card-tab-edge color-${accentColor}`}>
                     <span className="grommet-rivet" />
                     <span className="vertical-tab-label mono">ACTIVE</span>
                   </div>

@@ -3,10 +3,10 @@
 import { useEffect, useRef, useState, useMemo, useCallback } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 import { ExternalLink, Move } from 'lucide-react'
-import type { profile as staticProfile } from '@/data/content'
+import type { Profile } from '@/data/content'
 
 interface BulletinBoardProps {
-  profile: typeof staticProfile
+  profile: Profile
 }
 
 interface NoteConfig {
@@ -77,14 +77,14 @@ export default function BulletinBoard({ profile }: BulletinBoardProps) {
     {
       id: 'email',
       label: 'EMAIL',
-      value: 'sudhanshuvermafs@gmail.com',
-      url: 'sudhanshuvermafs@gmail.com',
+      value: profile.email || 'sudhanshuvermafs@gmail.com',
+      url: profile.email || 'sudhanshuvermafs@gmail.com',
       isEmail: true,
       initialPos: { top: '56%', right: '18%' },
       initialRot: -3.2,
       color: '#eee4c2'
     }
-  ], [profile.github, profile.linkedin, profile.coding])
+  ], [profile.github, profile.linkedin, profile.coding, profile.email])
 
   // Measure and update pin coordinates
   const measurePins = useCallback(() => {

@@ -1,18 +1,41 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
-import { ArrowUpRight, X } from 'lucide-react'
+import { ArrowUpRight, ChevronLeft, ChevronRight, X, ExternalLink, Code2 } from 'lucide-react'
+import Image from 'next/image'
 import { type Project } from '@/data/content'
 
 export default function ExperimentArchive({ projects }: { projects: Project[] }) {
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [activeImageIndex, setActiveImageIndex] = useState(0)
   const shouldReduceMotion = useReducedMotion()
 
   const activeProject = projects.find(p => p.id === selectedId) || null
 
+  // Reset active image index when switching projects
+  useEffect(() => {
+    setActiveImageIndex(0)
+  }, [selectedId])
+
   const handleSelect = (id: string) => {
     setSelectedId(prev => (prev === id ? null : id))
+  }
+
+  const projectImages = activeProject?.images ?? []
+  const hasImages = projectImages.length > 0
+  const currentImage = hasImages ? projectImages[activeImageIndex] : null
+
+  const handlePrevImage = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (!hasImages) return
+    setActiveImageIndex(prev => (prev === 0 ? projectImages.length - 1 : prev - 1))
+  }
+
+  const handleNextImage = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (!hasImages) return
+    setActiveImageIndex(prev => (prev === projectImages.length - 1 ? 0 : prev + 1))
   }
 
   return (
@@ -134,42 +157,161 @@ export default function ExperimentArchive({ projects }: { projects: Project[] })
                     </svg>
                   </div>
 
-                  {/* Footer Seal Action Link */}
+                  {/* Footer Seal & Actions */}
                   <div className="case-page-footer">
-                    <a href="#contact" className="case-seal-button mono">
-                      <span>GITHUB CROSS-REFERENCE</span>
-                      <ArrowUpRight size={14} />
-                    </a>
+                    <div className="case-actions-group">
+                      {activeProject.github && (
+                        <a
+                          href={activeProject.github.startsWith('http') ? activeProject.github : `https://${activeProject.github}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="case-seal-button mono cursor-target"
+                        >
+                          <Code2 size={13} />
+                          <span>GITHUB ↗</span>
+                        </a>
+                      )}
+                      {activeProject.liveUrl && (
+                        <a
+                          href={activeProject.liveUrl.startsWith('http') ? activeProject.liveUrl : `https://${activeProject.liveUrl}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="case-seal-button live mono cursor-target"
+                        >
+                          <ExternalLink size={13} />
+                          <span>LIVE DEMO ↗</span>
+                        </a>
+                      )}
+                    </div>
                     <span className="page-stamp-code mono">S/LAB EXP-RECORD</span>
                   </div>
                 </div>
 
-                {/* RIGHT SPREAD: Technical Blueprint Pinned Sheet */}
+                {/* RIGHT SPREAD: Technical Blueprint Pinned Sheet or Media Viewer */}
                 <div className="spread-page spread-page-right">
                   {/* Top Tape Fasteners */}
                   <div className="sheet-tape-strip top-left" aria-hidden="true" />
                   <div className="sheet-tape-strip top-right" aria-hidden="true" />
 
-                  {/* Blueprint Sheet Card */}
-                  <div className="pinned-blueprint-sheet">
-                    <div className="blueprint-sheet-header mono">
-                      <div className="schematic-doc-id">
-                        <span className="schematic-badge">[ SCHEMATIC ]</span>
-                        <span>DWG-{activeProject.code} // SYSTEM MAP</span>
+                  {hasImages && currentImage ? (
+                    /* ── PROJECT MEDIA VIEWER ── */
+                    <div className="pinned-blueprint-sheet media-viewer-sheet">
+                      <div className="blueprint-sheet-header mono">
+                        <div className="schematic-doc-id">
+                          <span className="schematic-badge">[ SPECIMEN VISUALS ]</span>
+                          <span>EXP-{activeProject.code} // EVIDENCE</span>
+                        </div>
+                        <span className="schematic-status">
+                          {projectImages.length > 1
+                            ? `FRAME ${activeImageIndex + 1}/${projectImages.length}`
+                            : 'FRAME 1/1'}
+                        </span>
                       </div>
-                      <span className="schematic-status">REV 2.1 VERIFIED</span>
-                    </div>
 
-                    {/* Dedicated SVG System Map Diagram */}
-                    <div className="blueprint-schematic-canvas">
-                      <ProjectTechnicalSchematic projectId={activeProject.id} accent={activeProject.accent} />
-                    </div>
+                      {/* Primary Image Container */}
+                      <div className="project-media-frame">
+                        <div className="media-image-wrapper">
+                          <Image
+                            src={currentImage.src}
+                            alt={currentImage.alt || `${activeProject.title} screenshot`}
+                            fill
+                            sizes="(max-width: 768px) 100vw, 550px"
+                            className="project-screenshot-img"
+                            priority
+                          />
+                        </div>
 
-                    <div className="blueprint-sheet-footer mono">
-                      <span className="foot-note">ARCHITECTURE FLOW & SIGNAL PATH</span>
-                      <span className="foot-rev">SYS_BUS // VERIFIED</span>
+                        {/* Navigation controls if multiple images */}
+                        {projectImages.length > 1 && (
+                          <>
+                            <button
+                              onClick={handlePrevImage}
+                              className="media-nav-arrow prev cursor-target"
+                              aria-label="Previous screenshot"
+                            >
+                              <ChevronLeft size={18} />
+                            </button>
+                            <button
+                              onClick={handleNextImage}
+                              className="media-nav-arrow next cursor-target"
+                              aria-label="Next screenshot"
+                            >
+                              <ChevronRight size={18} />
+                            </button>
+                          </>
+                        )}
+                      </div>
+
+                      {/* Indicator Dots for Multiple Images */}
+                      {projectImages.length > 1 && (
+                        <div className="media-pager-dots" aria-label="Screenshot gallery pages">
+                          {projectImages.map((_, dotIdx) => (
+                            <button
+                              key={dotIdx}
+                              onClick={() => setActiveImageIndex(dotIdx)}
+                              className={`pager-dot-btn cursor-target ${dotIdx === activeImageIndex ? 'is-active' : ''}`}
+                              aria-label={`View image ${dotIdx + 1}`}
+                            />
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Image Caption & Direct Actions */}
+                      <div className="media-sheet-caption-row">
+                        <p className="mono media-caption-text">
+                          {currentImage.caption || currentImage.alt}
+                        </p>
+                        <div className="media-dossier-links">
+                          {activeProject.github && (
+                            <a
+                              href={activeProject.github.startsWith('http') ? activeProject.github : `https://${activeProject.github}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="media-action-stamp mono cursor-target"
+                            >
+                              GITHUB ↗
+                            </a>
+                          )}
+                          {activeProject.liveUrl && (
+                            <a
+                              href={activeProject.liveUrl.startsWith('http') ? activeProject.liveUrl : `https://${activeProject.liveUrl}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="media-action-stamp live mono cursor-target"
+                            >
+                              LIVE DEMO ↗
+                            </a>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="blueprint-sheet-footer mono">
+                        <span className="foot-note">PHOTOGRAPHIC LOG & ARTIFACT EVIDENCE</span>
+                        <span className="foot-rev">VERIFIED CAPTURE</span>
+                      </div>
                     </div>
-                  </div>
+                  ) : (
+                    /* ── TECHNICAL SCHEMATIC FALLBACK ── */
+                    <div className="pinned-blueprint-sheet">
+                      <div className="blueprint-sheet-header mono">
+                        <div className="schematic-doc-id">
+                          <span className="schematic-badge">[ SCHEMATIC ]</span>
+                          <span>DWG-{activeProject.code} // SYSTEM MAP</span>
+                        </div>
+                        <span className="schematic-status">REV 2.1 VERIFIED</span>
+                      </div>
+
+                      {/* Dedicated SVG System Map Diagram */}
+                      <div className="blueprint-schematic-canvas">
+                        <ProjectTechnicalSchematic projectId={activeProject.id} accent={activeProject.accent} />
+                      </div>
+
+                      <div className="blueprint-sheet-footer mono">
+                        <span className="foot-note">ARCHITECTURE FLOW & SIGNAL PATH</span>
+                        <span className="foot-rev">SYS_BUS // VERIFIED</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -199,54 +341,53 @@ export default function ExperimentArchive({ projects }: { projects: Project[] })
               className="folders-archive-grid"
               initial={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, y: -12 }}
-              transition={{ duration: 0.3 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.22, ease: 'easeOut' }}
             >
-              {projects.map((project, index) => {
-                // Organic slight independent rotations for realistic desk scatter
-                const rotations = [-1.8, 1.4, -0.9, 2.1, -1.2]
-                const rot = rotations[index % rotations.length]
+              {projects.map((project, idx) => {
+                const isOdd = idx % 2 !== 0
+                const tabOffsetClass = `tab-pos-${(idx % 4) + 1}`
 
                 return (
                   <motion.div
                     key={project.id}
-                    className={`physical-folder-object folder-accent-${project.accent} cursor-target`}
-                    style={{ transform: `rotate(${rot}deg)` }}
-                    whileHover={shouldReduceMotion ? {} : { y: -6, scale: 1.015, transition: { duration: 0.18 } }}
-                    whileTap={{ scale: 0.985 }}
+                    className={`physical-folder-object tab-color-${project.accent} ${tabOffsetClass} cursor-target`}
                     onClick={() => handleSelect(project.id)}
-                    role="button"
+                    whileHover={shouldReduceMotion ? {} : { y: -6, rotate: isOdd ? 0.6 : -0.6, scale: 1.01 }}
+                    transition={{ duration: 0.18 }}
                     tabIndex={0}
-                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleSelect(project.id) }}
-                    aria-label={`Open folder ${project.code} ${project.title}`}
+                    role="button"
+                    aria-label={`Open case file ${project.code}: ${project.title}`}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault()
+                        handleSelect(project.id)
+                      }
+                    }}
                   >
-                    {/* Dog-eared corner */}
-                    <div className="folder-dog-ear" aria-hidden="true" />
-
-                    {/* Paperclip on select folders for physical touch */}
-                    {index % 2 === 0 && (
-                      <div className="folder-corner-paperclip" aria-hidden="true">
-                        <svg viewBox="0 0 24 60" width="16" height="42" fill="none" stroke="#727d88" strokeWidth="2.4">
-                          <path d="M 12,6 L 12,46 C 12,52 6,52 6,46 L 6,14 C 6,8 18,8 18,14 L 18,48 C 18,58 2,58 2,48 L 2,20" />
-                        </svg>
-                      </div>
-                    )}
-
-                    {/* Folder Tab with EXP code */}
+                    {/* Manila Folder Tab Ear */}
                     <div className={`folder-tab-ear tab-color-${project.accent}`}>
-                      <span className="tab-code-label mono">{project.code}</span>
-                      <span className="tab-open-indicator mono">OPEN ↗</span>
+                      <span className="folder-exp-code">{project.code}</span>
+                      <span className="folder-tab-name">{project.title}</span>
+                      <span className="tab-open-indicator">↗ INSPECT</span>
                     </div>
 
-                    {/* Folder Face Cover */}
+                    {/* Corner Paperclip & Dog-ear */}
+                    <div className="folder-corner-paperclip" aria-hidden="true">
+                      <svg viewBox="0 0 28 72" width="16" height="42" fill="none" stroke="#7e7663" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M 14,8 L 14,54 C 14,62 6,62 6,54 L 6,18 C 6,10 22,10 22,18 L 22,56 C 22,68 2,68 2,56 L 2,24" />
+                      </svg>
+                    </div>
+
+                    {/* Manila Folder Cover Front */}
                     <div className="folder-cover-face">
                       <div className="folder-cover-top mono">
-                        <span className="archive-stamp">S/LAB FILE RECORD</span>
-                        <span className="folder-status-pill">CONFIDENTIAL</span>
+                        <span className="archive-stamp">[ CASE FILE ]</span>
+                        <span className="folder-status-pill">{project.status}</span>
                       </div>
 
                       <div className="folder-center-title-block">
-                        <h4 className="folder-title serif">{project.title}</h4>
+                        <h3 className="folder-title serif">{project.title}</h3>
                         <p className="folder-synopsis serif">{project.objective}</p>
                       </div>
 
@@ -257,7 +398,7 @@ export default function ExperimentArchive({ projects }: { projects: Project[] })
                           ))}
                         </div>
                         <div className="inspect-cue mono">
-                          <span>CLICK TO OPEN SPREAD</span>
+                          <span>INSPECT FILE</span>
                           <ArrowUpRight size={13} />
                         </div>
                       </div>
@@ -291,17 +432,14 @@ function ProjectTechnicalSchematic({ projectId, accent }: { projectId: string; a
           </defs>
           <rect width="520" height="220" fill="url(#grid-pattern-sentinel)" />
 
-          {/* Module 1: Sensor Signal Sources */}
           <rect x="25" y="35" width="100" height="50" rx="3" fill="#0c1b2a" stroke={strokeColor} strokeWidth="1.5" />
           <text x="75" y="58" fill="#e8edf2" fontSize="9.5" fontFamily="var(--font-mono)" textAnchor="middle" fontWeight="bold">SIG_STREAM</text>
           <text x="75" y="72" fill="#7d93a8" fontSize="7.5" fontFamily="var(--font-mono)" textAnchor="middle">NOISY SENSORS</text>
 
-          {/* Bus Wire to Ingestion */}
           <path d="M 125,60 L 175,60" fill="none" stroke={strokeColor} strokeWidth="2" strokeDasharray="3 3" />
           <circle cx="125" cy="60" r="3" fill={dotColor} />
           <circle cx="175" cy="60" r="3" fill={dotColor} />
 
-          {/* Module 2: FastAPI Ingestion Core */}
           <rect x="175" y="35" width="120" height="150" rx="3" fill="#081422" stroke="#5d85a6" strokeWidth="1.5" />
           <text x="235" y="56" fill="#e8edf2" fontSize="10" fontFamily="var(--font-mono)" textAnchor="middle" fontWeight="bold">FASTAPI ENGINE</text>
           <line x1="185" y1="66" x2="285" y2="66" stroke="#253c52" strokeWidth="1" />
@@ -311,16 +449,13 @@ function ProjectTechnicalSchematic({ projectId, accent }: { projectId: string; a
           <text x="235" y="136" fill="#bad2e6" fontSize="8" fontFamily="var(--font-mono)" textAnchor="middle">ANOMALY BUFFER</text>
           <text x="235" y="170" fill={dotColor} fontSize="8" fontFamily="var(--font-mono)" textAnchor="middle">LATENCY: &lt;12ms</text>
 
-          {/* Bus Wire to React UI & Alert Engine */}
           <path d="M 295,92 L 355,92 L 355,55 L 390,55" fill="none" stroke={strokeColor} strokeWidth="1.8" />
           <path d="M 295,132 L 355,132 L 355,160 L 390,160" fill="none" stroke={strokeColor} strokeWidth="1.8" />
 
-          {/* Module 3: React Signal Dashboard */}
           <rect x="390" y="30" width="105" height="50" rx="3" fill="#0c1b2a" stroke="#5d85a6" strokeWidth="1.5" />
           <text x="442" y="53" fill="#e8edf2" fontSize="9" fontFamily="var(--font-mono)" textAnchor="middle" fontWeight="bold">REACT DASHBOARD</text>
           <text x="442" y="68" fill="#7d93a8" fontSize="7.5" fontFamily="var(--font-mono)" textAnchor="middle">REAL-TIME HUD</text>
 
-          {/* Module 4: Alert Dispatch Matrix */}
           <rect x="390" y="135" width="105" height="50" rx="3" fill="#0c1b2a" stroke={strokeColor} strokeWidth="1.5" />
           <text x="442" y="158" fill="#e8edf2" fontSize="9" fontFamily="var(--font-mono)" textAnchor="middle" fontWeight="bold">ALERT DISPATCH</text>
           <text x="442" y="173" fill={dotColor} fontSize="7.5" fontFamily="var(--font-mono)" textAnchor="middle">ACTIVE BROADCAST</text>
@@ -337,27 +472,22 @@ function ProjectTechnicalSchematic({ projectId, accent }: { projectId: string; a
           </defs>
           <rect width="520" height="220" fill="url(#aqua-grid-pattern)" />
 
-          {/* Probe 1: Turbidity Probe */}
           <rect x="25" y="35" width="100" height="42" rx="3" fill="#0c1b2a" stroke={strokeColor} strokeWidth="1.5" />
           <text x="75" y="56" fill="#e8edf2" fontSize="8.5" fontFamily="var(--font-mono)" textAnchor="middle" fontWeight="bold">TURBIDITY PROBE</text>
           <text x="75" y="68" fill="#7d93a8" fontSize="7" fontFamily="var(--font-mono)" textAnchor="middle">OPTICAL SCATTER</text>
 
-          {/* Probe 2: pH Electrode */}
           <rect x="25" y="90" width="100" height="42" rx="3" fill="#0c1b2a" stroke={strokeColor} strokeWidth="1.5" />
           <text x="75" y="111" fill="#e8edf2" fontSize="8.5" fontFamily="var(--font-mono)" textAnchor="middle" fontWeight="bold">pH ELECTRODE</text>
           <text x="75" y="123" fill="#7d93a8" fontSize="7" fontFamily="var(--font-mono)" textAnchor="middle">mV DIFFERENTIAL</text>
 
-          {/* Probe 3: Temp / TDS */}
           <rect x="25" y="145" width="100" height="42" rx="3" fill="#0c1b2a" stroke={strokeColor} strokeWidth="1.5" />
           <text x="75" y="166" fill="#e8edf2" fontSize="8.5" fontFamily="var(--font-mono)" textAnchor="middle" fontWeight="bold">TDS / THERMAL</text>
           <text x="75" y="178" fill="#7d93a8" fontSize="7" fontFamily="var(--font-mono)" textAnchor="middle">ONE-WIRE BUS</text>
 
-          {/* Wiring Harness to Microcontroller */}
           <path d="M 125,56 L 165,56 L 165,110 L 195,110" fill="none" stroke={strokeColor} strokeWidth="1.8" />
           <path d="M 125,111 L 195,111" fill="none" stroke={strokeColor} strokeWidth="1.8" />
           <path d="M 125,166 L 165,166 L 165,112 L 195,112" fill="none" stroke={strokeColor} strokeWidth="1.8" />
 
-          {/* Arduino / Embedded Processing Node */}
           <rect x="195" y="45" width="130" height="135" rx="3" fill="#081422" stroke="#5d85a6" strokeWidth="1.5" />
           <text x="260" y="70" fill="#e8edf2" fontSize="10" fontFamily="var(--font-mono)" textAnchor="middle" fontWeight="bold">ARDUINO MCU</text>
           <rect x="208" y="85" width="104" height="28" rx="2" fill="#122538" stroke="#3b5a78" strokeWidth="1" />
@@ -365,12 +495,10 @@ function ProjectTechnicalSchematic({ projectId, accent }: { projectId: string; a
           <rect x="208" y="125" width="104" height="28" rx="2" fill="#122538" stroke="#3b5a78" strokeWidth="1" />
           <text x="260" y="143" fill="#bad2e6" fontSize="8" fontFamily="var(--font-mono)" textAnchor="middle">THRESHOLD LOGIC</text>
 
-          {/* Output to Telemetry Packet */}
           <path d="M 325,112 L 385,112" fill="none" stroke={strokeColor} strokeWidth="2" />
           <circle cx="325" cy="112" r="3" fill={dotColor} />
           <circle cx="385" cy="112" r="3" fill={dotColor} />
 
-          {/* Module 3: Field Logger & Alert Flag */}
           <rect x="385" y="80" width="110" height="65" rx="3" fill="#0c1b2a" stroke={strokeColor} strokeWidth="1.5" />
           <text x="440" y="105" fill="#e8edf2" fontSize="9.5" fontFamily="var(--font-mono)" textAnchor="middle" fontWeight="bold">FIELD LOG / SD</text>
           <text x="440" y="122" fill={dotColor} fontSize="8" fontFamily="var(--font-mono)" textAnchor="middle">ANOMALY FLAG: OK</text>
@@ -388,39 +516,39 @@ function ProjectTechnicalSchematic({ projectId, accent }: { projectId: string; a
           </defs>
           <rect width="520" height="220" fill="url(#miwa-grid-pattern)" />
 
-          {/* Input: Utterance Stream */}
-          <rect x="25" y="75" width="105" height="65" rx="3" fill="#0c1b2a" stroke={strokeColor} strokeWidth="1.5" />
-          <text x="77" y="102" fill="#e8edf2" fontSize="9.5" fontFamily="var(--font-mono)" textAnchor="middle" fontWeight="bold">USER PROMPT</text>
-          <text x="77" y="118" fill="#7d93a8" fontSize="7.5" fontFamily="var(--font-mono)" textAnchor="middle">TEXT / VOICE IN</text>
+          <rect x="25" y="45" width="105" height="50" rx="3" fill="#0c1b2a" stroke={strokeColor} strokeWidth="1.5" />
+          <text x="77" y="68" fill="#e8edf2" fontSize="9" fontFamily="var(--font-mono)" textAnchor="middle" fontWeight="bold">USER PROMPT</text>
+          <text x="77" y="82" fill="#7d93a8" fontSize="7.5" fontFamily="var(--font-mono)" textAnchor="middle">NATURAL INPUT</text>
 
-          <path d="M 130,107 L 180,107" fill="none" stroke={strokeColor} strokeWidth="2" />
-          <circle cx="130" cy="107" r="3" fill={dotColor} />
-          <circle cx="180" cy="107" r="3" fill={dotColor} />
+          <path d="M 130,70 L 180,70" fill="none" stroke={strokeColor} strokeWidth="1.8" />
+          <circle cx="130" cy="70" r="3" fill={dotColor} />
+          <circle cx="180" cy="70" r="3" fill={dotColor} />
 
-          {/* Central State Engine */}
-          <rect x="180" y="40" width="140" height="140" rx="3" fill="#081422" stroke="#5d85a6" strokeWidth="1.5" />
-          <text x="250" y="65" fill="#e8edf2" fontSize="10" fontFamily="var(--font-mono)" textAnchor="middle" fontWeight="bold">MIWA CONTEXT BUS</text>
-          <rect x="195" y="80" width="110" height="26" rx="2" fill="#122538" stroke="#3b5a78" strokeWidth="1" />
-          <text x="250" y="97" fill="#bad2e6" fontSize="8" fontFamily="var(--font-mono)" textAnchor="middle">INTENT PARSER</text>
-          <rect x="195" y="115" width="110" height="26" rx="2" fill="#122538" stroke="#3b5a78" strokeWidth="1" />
-          <text x="250" y="132" fill="#bad2e6" fontSize="8" fontFamily="var(--font-mono)" textAnchor="middle">MEMORY ROSTER</text>
-          <text x="250" y="165" fill={dotColor} fontSize="8" fontFamily="var(--font-mono)" textAnchor="middle">CALM PACING ENGINE</text>
+          <rect x="180" y="35" width="140" height="150" rx="3" fill="#081422" stroke="#5d85a6" strokeWidth="1.5" />
+          <text x="250" y="56" fill="#e8edf2" fontSize="10" fontFamily="var(--font-mono)" textAnchor="middle" fontWeight="bold">MIWA CONTEXT ENG.</text>
+          <line x1="190" y1="66" x2="310" y2="66" stroke="#253c52" strokeWidth="1" />
+          <rect x="195" y="78" width="110" height="26" rx="2" fill="#122538" stroke="#3b5a78" strokeWidth="1" />
+          <text x="250" y="95" fill="#bad2e6" fontSize="7.5" fontFamily="var(--font-mono)" textAnchor="middle">CONTEXT WINDOW</text>
+          <rect x="195" y="112" width="110" height="26" rx="2" fill="#122538" stroke="#3b5a78" strokeWidth="1" />
+          <text x="250" y="129" fill="#bad2e6" fontSize="7.5" fontFamily="var(--font-mono)" textAnchor="middle">CONFIDENCE FILTER</text>
+          <text x="250" y="165" fill={dotColor} fontSize="8" fontFamily="var(--font-mono)" textAnchor="middle">LATENCY: STREAMING</text>
 
-          <path d="M 320,107 L 375,107" fill="none" stroke={strokeColor} strokeWidth="2" />
-          <circle cx="320" cy="107" r="3" fill={dotColor} />
-          <circle cx="375" cy="107" r="3" fill={dotColor} />
+          <path d="M 320,70 L 380,70" fill="none" stroke={strokeColor} strokeWidth="1.8" />
+          <path d="M 320,125 L 380,125" fill="none" stroke={strokeColor} strokeWidth="1.8" />
 
-          {/* LLM Synthesis Output */}
-          <rect x="375" y="75" width="120" height="65" rx="3" fill="#0c1b2a" stroke={strokeColor} strokeWidth="1.5" />
-          <text x="435" y="102" fill="#e8edf2" fontSize="9.5" fontFamily="var(--font-mono)" textAnchor="middle" fontWeight="bold">SYNTHESIS LAYER</text>
-          <text x="435" y="118" fill="#7d93a8" fontSize="7.5" fontFamily="var(--font-mono)" textAnchor="middle">DELIBERATE OUTPUT</text>
-          <text x="435" y="132" fill={dotColor} fontSize="7" fontFamily="var(--font-mono)" textAnchor="middle">LOW COGNITIVE LOAD</text>
+          <rect x="380" y="45" width="115" height="50" rx="3" fill="#0c1b2a" stroke="#5d85a6" strokeWidth="1.5" />
+          <text x="437" y="68" fill="#e8edf2" fontSize="9" fontFamily="var(--font-mono)" textAnchor="middle" fontWeight="bold">STREAMED RESP.</text>
+          <text x="437" y="82" fill="#bad2e6" fontSize="7.5" fontFamily="var(--font-mono)" textAnchor="middle">CHUNKS / TOKEN</text>
+
+          <rect x="380" y="105" width="115" height="50" rx="3" fill="#0c1b2a" stroke={strokeColor} strokeWidth="1.5" />
+          <text x="437" y="128" fill="#e8edf2" fontSize="9" fontFamily="var(--font-mono)" textAnchor="middle" fontWeight="bold">HUMAN STATE</text>
+          <text x="437" y="142" fill={dotColor} fontSize="7.5" fontFamily="var(--font-mono)" textAnchor="middle">STATUS: CALM</text>
         </svg>
       )
 
     case 'avionics':
       return (
-        <svg viewBox="0 0 520 220" className="schematic-svg" aria-label="Avionics State Telemetry Architecture">
+        <svg viewBox="0 0 520 220" className="schematic-svg" aria-label="Rocket Avionics Telemetry Path">
           <defs>
             <pattern id="avionics-grid-pattern" width="20" height="20" patternUnits="userSpaceOnUse">
               <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="0.8" />
@@ -428,79 +556,83 @@ function ProjectTechnicalSchematic({ projectId, accent }: { projectId: string; a
           </defs>
           <rect width="520" height="220" fill="url(#avionics-grid-pattern)" />
 
-          {/* Sensors: IMU + Barometer */}
-          <rect x="25" y="45" width="105" height="42" rx="3" fill="#0c1b2a" stroke={strokeColor} strokeWidth="1.5" />
-          <text x="77" y="66" fill="#e8edf2" fontSize="8.5" fontFamily="var(--font-mono)" textAnchor="middle" fontWeight="bold">6-DOF IMU</text>
-          <text x="77" y="78" fill="#7d93a8" fontSize="7" fontFamily="var(--font-mono)" textAnchor="middle">ACCEL / GYRO</text>
+          <rect x="25" y="35" width="95" height="42" rx="3" fill="#0c1b2a" stroke={strokeColor} strokeWidth="1.5" />
+          <text x="72" y="56" fill="#e8edf2" fontSize="8.5" fontFamily="var(--font-mono)" textAnchor="middle" fontWeight="bold">IMU / ACCEL</text>
+          <text x="72" y="68" fill="#7d93a8" fontSize="7" fontFamily="var(--font-mono)" textAnchor="middle">6-DOF I2C</text>
 
-          <rect x="25" y="125" width="105" height="42" rx="3" fill="#0c1b2a" stroke={strokeColor} strokeWidth="1.5" />
-          <text x="77" y="146" fill="#e8edf2" fontSize="8.5" fontFamily="var(--font-mono)" textAnchor="middle" fontWeight="bold">BAROMETER</text>
-          <text x="77" y="158" fill="#7d93a8" fontSize="7" fontFamily="var(--font-mono)" textAnchor="middle">ALTITUDE / PRESSURE</text>
+          <rect x="25" y="90" width="95" height="42" rx="3" fill="#0c1b2a" stroke={strokeColor} strokeWidth="1.5" />
+          <text x="72" y="111" fill="#e8edf2" fontSize="8.5" fontFamily="var(--font-mono)" textAnchor="middle" fontWeight="bold">BARO / ALTI</text>
+          <text x="72" y="123" fill="#7d93a8" fontSize="7" fontFamily="var(--font-mono)" textAnchor="middle">SPI PRESSURE</text>
 
-          <path d="M 130,66 L 160,66 L 160,105 L 185,105" fill="none" stroke={strokeColor} strokeWidth="1.8" />
-          <path d="M 130,146 L 160,146 L 160,115 L 185,115" fill="none" stroke={strokeColor} strokeWidth="1.8" />
+          <rect x="25" y="145" width="95" height="42" rx="3" fill="#0c1b2a" stroke={strokeColor} strokeWidth="1.5" />
+          <text x="72" y="166" fill="#e8edf2" fontSize="8.5" fontFamily="var(--font-mono)" textAnchor="middle" fontWeight="bold">GPS MOD</text>
+          <text x="72" y="178" fill="#7d93a8" fontSize="7" fontFamily="var(--font-mono)" textAnchor="middle">UART NMEA</text>
 
-          {/* Flight Computer Core */}
-          <rect x="185" y="40" width="135" height="140" rx="3" fill="#081422" stroke="#5d85a6" strokeWidth="1.5" />
-          <text x="252" y="65" fill="#e8edf2" fontSize="10" fontFamily="var(--font-mono)" textAnchor="middle" fontWeight="bold">FLIGHT COMPUTER</text>
-          <rect x="198" y="80" width="110" height="26" rx="2" fill="#122538" stroke="#3b5a78" strokeWidth="1" />
-          <text x="253" y="97" fill="#bad2e6" fontSize="8" fontFamily="var(--font-mono)" textAnchor="middle">KALMAN STATE EST.</text>
-          <rect x="198" y="115" width="110" height="26" rx="2" fill="#122538" stroke="#3b5a78" strokeWidth="1" />
-          <text x="253" y="132" fill="#bad2e6" fontSize="8" fontFamily="var(--font-mono)" textAnchor="middle">APOGEE DETECTION</text>
-          <text x="252" y="165" fill={dotColor} fontSize="8" fontFamily="var(--font-mono)" textAnchor="middle">CYCLE TIME: 100Hz</text>
+          <path d="M 120,56 L 165,56 L 165,110 L 190,110" fill="none" stroke={strokeColor} strokeWidth="1.8" />
+          <path d="M 120,111 L 190,111" fill="none" stroke={strokeColor} strokeWidth="1.8" />
+          <path d="M 120,166 L 165,166 L 165,112 L 190,112" fill="none" stroke={strokeColor} strokeWidth="1.8" />
 
-          <path d="M 320,110 L 375,110" fill="none" stroke={strokeColor} strokeWidth="2" />
-          <circle cx="320" cy="110" r="3" fill={dotColor} />
-          <circle cx="375" cy="110" r="3" fill={dotColor} />
+          <rect x="190" y="40" width="135" height="145" rx="3" fill="#081422" stroke="#5d85a6" strokeWidth="1.5" />
+          <text x="257" y="64" fill="#e8edf2" fontSize="9.5" fontFamily="var(--font-mono)" textAnchor="middle" fontWeight="bold">FLIGHT COMP. MCU</text>
+          <rect x="202" y="78" width="110" height="26" rx="2" fill="#122538" stroke="#3b5a78" strokeWidth="1" />
+          <text x="257" y="95" fill="#bad2e6" fontSize="7.5" fontFamily="var(--font-mono)" textAnchor="middle">APOGEE DETECTOR</text>
+          <rect x="202" y="112" width="110" height="26" rx="2" fill="#122538" stroke="#3b5a78" strokeWidth="1" />
+          <text x="257" y="129" fill="#bad2e6" fontSize="7.5" fontFamily="var(--font-mono)" textAnchor="middle">PYRO RECOVERY CH</text>
+          <text x="257" y="165" fill={dotColor} fontSize="8" fontFamily="var(--font-mono)" textAnchor="middle">BUS: 100Hz POLLING</text>
 
-          {/* Ground Telemetry Downlink */}
-          <rect x="375" y="75" width="120" height="65" rx="3" fill="#0c1b2a" stroke={strokeColor} strokeWidth="1.5" />
-          <text x="435" y="102" fill="#e8edf2" fontSize="9.5" fontFamily="var(--font-mono)" textAnchor="middle" fontWeight="bold">RF DOWNLINK</text>
-          <text x="435" y="118" fill="#7d93a8" fontSize="7.5" fontFamily="var(--font-mono)" textAnchor="middle">GROUND TELEMETRY</text>
-          <text x="435" y="132" fill={dotColor} fontSize="7" fontFamily="var(--font-mono)" textAnchor="middle">PACKET LOSS: 0.02%</text>
+          <path d="M 325,112 L 385,112" fill="none" stroke={strokeColor} strokeWidth="2" />
+          <circle cx="325" cy="112" r="3" fill={dotColor} />
+          <circle cx="385" cy="112" r="3" fill={dotColor} />
+
+          <rect x="385" y="70" width="115" height="85" rx="3" fill="#0c1b2a" stroke={strokeColor} strokeWidth="1.5" />
+          <text x="442" y="95" fill="#e8edf2" fontSize="9" fontFamily="var(--font-mono)" textAnchor="middle" fontWeight="bold">TELEMETRY RF</text>
+          <text x="442" y="112" fill={dotColor} fontSize="8" fontFamily="var(--font-mono)" textAnchor="middle">LINK: 433 MHz</text>
+          <text x="442" y="128" fill="#7d93a8" fontSize="7" fontFamily="var(--font-mono)" textAnchor="middle">GROUND LINK OK</text>
+          <text x="442" y="142" fill="#bad2e6" fontSize="7" fontFamily="var(--font-mono)" textAnchor="middle">PACKET LOSS: 0%</text>
         </svg>
       )
 
     case 'heartbeat':
-    default:
       return (
-        <svg viewBox="0 0 520 220" className="schematic-svg" aria-label="Heartbeat Keychain Biometric PWM Architecture">
+        <svg viewBox="0 0 520 220" className="schematic-svg" aria-label="Heartbeat Biometric Feedback Loop">
           <defs>
-            <pattern id="heart-grid-pattern" width="20" height="20" patternUnits="userSpaceOnUse">
+            <pattern id="heartbeat-grid-pattern" width="20" height="20" patternUnits="userSpaceOnUse">
               <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="0.8" />
             </pattern>
           </defs>
-          <rect width="520" height="220" fill="url(#heart-grid-pattern)" />
+          <rect width="520" height="220" fill="url(#heartbeat-grid-pattern)" />
 
-          {/* Optical Pulse Sensor */}
-          <rect x="25" y="70" width="105" height="70" rx="3" fill="#0c1b2a" stroke={strokeColor} strokeWidth="1.5" />
-          <text x="77" y="97" fill="#e8edf2" fontSize="9.5" fontFamily="var(--font-mono)" textAnchor="middle" fontWeight="bold">OPTICAL PPG</text>
-          <text x="77" y="113" fill="#7d93a8" fontSize="7.5" fontFamily="var(--font-mono)" textAnchor="middle">530nm GREEN LED</text>
-          <text x="77" y="127" fill={dotColor} fontSize="7" fontFamily="var(--font-mono)" textAnchor="middle">RAW PHOTODIODE</text>
+          <rect x="25" y="55" width="105" height="50" rx="3" fill="#0c1b2a" stroke={strokeColor} strokeWidth="1.5" />
+          <text x="77" y="78" fill="#e8edf2" fontSize="9" fontFamily="var(--font-mono)" textAnchor="middle" fontWeight="bold">PULSE SENSOR</text>
+          <text x="77" y="92" fill="#7d93a8" fontSize="7.5" fontFamily="var(--font-mono)" textAnchor="middle">PPG IR TRANSDUCER</text>
 
-          <path d="M 130,105 L 180,105" fill="none" stroke={strokeColor} strokeWidth="2" />
-          <circle cx="130" cy="105" r="3" fill={dotColor} />
-          <circle cx="180" cy="105" r="3" fill={dotColor} />
+          <path d="M 130,80 L 180,80" fill="none" stroke={strokeColor} strokeWidth="1.8" />
+          <circle cx="130" cy="80" r="3" fill={dotColor} />
+          <circle cx="180" cy="80" r="3" fill={dotColor} />
 
-          {/* ESP32 Peak Detector */}
-          <rect x="180" y="40" width="135" height="140" rx="3" fill="#081422" stroke="#5d85a6" strokeWidth="1.5" />
-          <text x="247" y="65" fill="#e8edf2" fontSize="10" fontFamily="var(--font-mono)" textAnchor="middle" fontWeight="bold">ESP32 LOW-POWER</text>
-          <rect x="195" y="80" width="105" height="26" rx="2" fill="#122538" stroke="#3b5a78" strokeWidth="1" />
-          <text x="247" y="97" fill="#bad2e6" fontSize="8" fontFamily="var(--font-mono)" textAnchor="middle">PEAK DETECTION</text>
-          <rect x="195" y="115" width="105" height="26" rx="2" fill="#122538" stroke="#3b5a78" strokeWidth="1" />
-          <text x="247" y="132" fill="#bad2e6" fontSize="8" fontFamily="var(--font-mono)" textAnchor="middle">PWM WAVE SHAPER</text>
-          <text x="247" y="165" fill={dotColor} fontSize="8" fontFamily="var(--font-mono)" textAnchor="middle">DEEP SLEEP: 15uA</text>
+          <rect x="180" y="35" width="140" height="150" rx="3" fill="#081422" stroke="#5d85a6" strokeWidth="1.5" />
+          <text x="250" y="58" fill="#e8edf2" fontSize="10" fontFamily="var(--font-mono)" textAnchor="middle" fontWeight="bold">ESP32 LOW-POWER</text>
+          <line x1="190" y1="68" x2="310" y2="68" stroke="#253c52" strokeWidth="1" />
+          <rect x="195" y="80" width="110" height="26" rx="2" fill="#122538" stroke="#3b5a78" strokeWidth="1" />
+          <text x="250" y="97" fill="#bad2e6" fontSize="7.5" fontFamily="var(--font-mono)" textAnchor="middle">ANALOG PEAK DETECT</text>
+          <rect x="195" y="115" width="110" height="26" rx="2" fill="#122538" stroke="#3b5a78" strokeWidth="1" />
+          <text x="250" y="132" fill="#bad2e6" fontSize="7.5" fontFamily="var(--font-mono)" textAnchor="middle">HAPTIC PWM TIMING</text>
+          <text x="250" y="165" fill={dotColor} fontSize="8" fontFamily="var(--font-mono)" textAnchor="middle">CURRENT: &lt;4.2mA</text>
 
-          <path d="M 315,105 L 375,105" fill="none" stroke={strokeColor} strokeWidth="2" />
-          <circle cx="315" cy="105" r="3" fill={dotColor} />
-          <circle cx="375" cy="105" r="3" fill={dotColor} />
+          <path d="M 320,90 L 375,90 L 375,60 L 395,60" fill="none" stroke={strokeColor} strokeWidth="1.8" />
+          <path d="M 320,130 L 375,130 L 375,150 L 395,150" fill="none" stroke={strokeColor} strokeWidth="1.8" />
 
-          {/* Haptic Motor / Tactile Feedback */}
-          <rect x="375" y="70" width="120" height="70" rx="3" fill="#0c1b2a" stroke={strokeColor} strokeWidth="1.5" />
-          <text x="435" y="97" fill="#e8edf2" fontSize="9.5" fontFamily="var(--font-mono)" textAnchor="middle" fontWeight="bold">HAPTIC COIL</text>
-          <text x="435" y="113" fill="#7d93a8" fontSize="7.5" fontFamily="var(--font-mono)" textAnchor="middle">TACTILE HEARTBEAT</text>
-          <text x="435" y="127" fill={dotColor} fontSize="7" fontFamily="var(--font-mono)" textAnchor="middle">RESONANT PULSE</text>
+          <rect x="395" y="35" width="105" height="50" rx="3" fill="#0c1b2a" stroke="#5d85a6" strokeWidth="1.5" />
+          <text x="447" y="58" fill="#e8edf2" fontSize="9" fontFamily="var(--font-mono)" textAnchor="middle" fontWeight="bold">HAPTIC MOTOR</text>
+          <text x="447" y="72" fill="#bad2e6" fontSize="7.5" fontFamily="var(--font-mono)" textAnchor="middle">TACTILE PULSE</text>
+
+          <rect x="395" y="125" width="105" height="50" rx="3" fill="#0c1b2a" stroke={strokeColor} strokeWidth="1.5" />
+          <text x="447" y="148" fill="#e8edf2" fontSize="9" fontFamily="var(--font-mono)" textAnchor="middle" fontWeight="bold">DIFFUSED LED</text>
+          <text x="447" y="162" fill={dotColor} fontSize="7.5" fontFamily="var(--font-mono)" textAnchor="middle">WARM GLOW SYNC</text>
         </svg>
       )
+
+    default:
+      return null
   }
 }

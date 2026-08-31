@@ -1,21 +1,30 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
-import { ArrowDown, ArrowUp, ArrowUpRight, Code2, GitBranch, Paperclip, Send, Terminal, Wrench, MapPin, Radio, X } from 'lucide-react'
+import { motion, useReducedMotion } from 'framer-motion'
+import { ArrowDown, ArrowUp, ArrowUpRight, Code2, GitBranch, Paperclip, Send, Terminal, MapPin, Radio } from 'lucide-react'
 import {
-  achievements as staticAchievements,
   profile as staticProfile,
+  academic as staticAcademic,
   projects as staticProjects,
+  skills as staticSkills,
+  achievements as staticAchievements,
   responsibilities as staticResponsibilities,
   roadmap as staticRoadmap,
-  type Project
+  type Profile,
+  type Academic,
+  type Project,
+  type SkillCompartment,
+  type Achievement,
+  type RoadmapItem
 } from '@/data/content'
 import {
+  fetchProfile,
+  fetchAcademic,
+  fetchProjects,
+  fetchSkills,
   fetchAchievements,
   fetchCredentials,
-  fetchProfile,
-  fetchProjects,
   fetchRoadmap
 } from '@/lib/api'
 import SplitFlapText from './split-flap-text'
@@ -28,19 +37,33 @@ import TargetCursor from './target-cursor'
 import BulletinBoard from './bulletin-board'
 
 const reveal = { hidden: { opacity: 0, y: 18 }, visible: { opacity: 1, y: 0, transition: { duration: .45 } } }
-function Section({ id, label, title, children, blueprint = false }: { id: string; label: string; title: string; children: React.ReactNode; blueprint?: boolean }) { return <motion.section id={id} initial="hidden" whileInView="visible" viewport={{ once: true, amount: .12 }} variants={reveal} className={`notebook-section section-contained ${blueprint ? 'blueprint' : 'paper'}`}><div className="section-inner"><div className="section-kicker"><span>{label}</span><span className="section-rule" /></div><h2>{title}</h2>{children}</div></motion.section> }
+function Section({ id, label, title, children, blueprint = false }: { id: string; label: string; title: string; children: React.ReactNode; blueprint?: boolean }) {
+  return (
+    <motion.section id={id} initial="hidden" whileInView="visible" viewport={{ once: true, amount: .12 }} variants={reveal} className={`notebook-section section-contained ${blueprint ? 'blueprint' : 'paper'}`}>
+      <div className="section-inner">
+        <div className="section-kicker">
+          <span>{label}</span>
+          <span className="section-rule" />
+        </div>
+        <h2>{title}</h2>
+        {children}
+      </div>
+    </motion.section>
+  )
+}
 
 export function LabNotebook() {
   const [status, setStatus] = useState('')
-  const [active, setActive] = useState<string | null>(null)
   const [isInsideProjects, setIsInsideProjects] = useState(false)
   const reduceMotion = useReducedMotion()
 
-  const [profileData, setProfileData] = useState(staticProfile)
+  const [profileData, setProfileData] = useState<Profile>(staticProfile)
+  const [academicData, setAcademicData] = useState<Academic>(staticAcademic)
+  const [skillsList, setSkillsList] = useState<SkillCompartment[]>(staticSkills)
   const [projectsList, setProjectsList] = useState<Project[]>(staticProjects)
-  const [achievementsList, setAchievementsList] = useState(staticAchievements)
-  const [credentialsList, setCredentialsList] = useState(staticResponsibilities)
-  const [roadmapList, setRoadmapList] = useState(staticRoadmap)
+  const [achievementsList, setAchievementsList] = useState<Achievement[]>(staticAchievements)
+  const [credentialsList, setCredentialsList] = useState<string[]>(staticResponsibilities)
+  const [roadmapList, setRoadmapList] = useState<RoadmapItem[]>(staticRoadmap)
   const [backendConnected, setBackendConnected] = useState(false)
 
   useEffect(() => {
@@ -49,29 +72,61 @@ export function LabNotebook() {
       if ('scrollRestoration' in history) history.scrollRestoration = 'manual'
     }
 
-    // Fetch live data from FastAPI Backend
+    // Resilient centralized fetching via Promise.allSettled
     let isMounted = true
     async function loadBackendData() {
       try {
-        const [prof, projs, ach, cred, road] = await Promise.all([
+        const results = await Promise.allSettled([
           fetchProfile(),
+          fetchAcademic(),
           fetchProjects(),
+          fetchSkills(),
           fetchAchievements(),
           fetchCredentials(),
           fetchRoadmap()
         ])
-        if (isMounted) {
-          setProfileData(prof)
-          setProjectsList(projs)
-          setAchievementsList(ach)
-          setCredentialsList(cred)
-          setRoadmapList(road)
+
+        if (!isMounted) return
+
+        let anySuccess = false
+
+        if (results[0].status === 'fulfilled') {
+          setProfileData(results[0].value)
+          anySuccess = true
+        }
+        if (results[1].status === 'fulfilled') {
+          setAcademicData(results[1].value)
+          anySuccess = true
+        }
+        if (results[2].status === 'fulfilled') {
+          setProjectsList(results[2].value)
+          anySuccess = true
+        }
+        if (results[3].status === 'fulfilled') {
+          setSkillsList(results[3].value)
+          anySuccess = true
+        }
+        if (results[4].status === 'fulfilled') {
+          setAchievementsList(results[4].value)
+          anySuccess = true
+        }
+        if (results[5].status === 'fulfilled') {
+          setCredentialsList(results[5].value)
+          anySuccess = true
+        }
+        if (results[6].status === 'fulfilled') {
+          setRoadmapList(results[6].value)
+          anySuccess = true
+        }
+
+        if (anySuccess) {
           setBackendConnected(true)
         }
       } catch {
-        // Fallback to static content if backend is offline
+        // Fallback to static content if global network failure
       }
     }
+
     loadBackendData()
     return () => { isMounted = false }
   }, [])
@@ -80,13 +135,18 @@ export function LabNotebook() {
     e.preventDefault()
     setStatus('TRANSMITTING...')
     const form = new FormData(e.currentTarget)
-    const response = await fetch('/api/contact', {
-      method: 'POST',
-      body: JSON.stringify(Object.fromEntries(form)),
-      headers: { 'Content-Type': 'application/json' }
-    })
-    setStatus(response.ok ? 'RECEIVED / MESSAGE LOGGED.' : 'TRANSMISSION FAILED.')
-    if (response.ok) e.currentTarget.reset()
+    const payload = Object.fromEntries(form)
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+        headers: { 'Content-Type': 'application/json' }
+      })
+      setStatus(response.ok ? 'RECEIVED / MESSAGE LOGGED.' : 'TRANSMISSION FAILED.')
+      if (response.ok) e.currentTarget.reset()
+    } catch {
+      setStatus('TRANSMISSION FAILED.')
+    }
   }
 
   return (
@@ -145,11 +205,11 @@ export function LabNotebook() {
       </Section>
 
       <Section id="academic" label="02 / GRADE REPORT" title="Academic profile" blueprint>
-        <AcademicPanel />
+        <AcademicPanel academic={academicData} />
       </Section>
 
       <Section id="skills" label="03 / TOOLBOX" title="Current instruments.">
-        <ToolboxSchematic />
+        <ToolboxSchematic skills={skillsList} />
       </Section>
 
       <motion.section
@@ -240,9 +300,9 @@ export function LabNotebook() {
             <span className="mono">CONTACT CARD / SUDHANSHU</span>
             <h3>Let&apos;s build a<br /><em>useful experiment.</em></h3>
             <div className="contact-links">
-              <a href={`https://${profileData.linkedin}`}><Code2 /> LinkedIn</a>
-              <a href={`https://${profileData.github}`}><GitBranch /> GitHub</a>
-              <a href={`https://${profileData.coding}`}><Terminal /> Coding profile</a>
+              <a href={`https://${profileData.linkedin}`} target="_blank" rel="noopener noreferrer"><Code2 /> LinkedIn</a>
+              <a href={`https://${profileData.github}`} target="_blank" rel="noopener noreferrer"><GitBranch /> GitHub</a>
+              <a href={`https://${profileData.coding}`} target="_blank" rel="noopener noreferrer"><Terminal /> Coding profile</a>
             </div>
             <a href="#contact" className="resume-button">DOWNLOAD RESUME <ArrowUpRight /></a>
           </div>
