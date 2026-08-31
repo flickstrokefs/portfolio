@@ -3070,10 +3070,11 @@ button, input, textarea { font: inherit; }
 
 .reticle-center-dot {
   position: absolute;
-  top: -2.5px;
-  left: -2.5px;
+  top: 0;
+  left: 0;
   width: 5px;
   height: 5px;
+  transform: translate(-50%, -50%);
   border-radius: 50%;
   background: #f4efdf;
   pointer-events: none;
