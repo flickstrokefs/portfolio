@@ -34,7 +34,6 @@
     "@types/react-dom": "^19",
     "@types/three": "^0.185.4",
     "postcss": "^8.5",
-    "puppeteer": "^25.9.0",
     "tailwindcss": "^4.3.3",
     "typescript": "5.7.3"
   }
