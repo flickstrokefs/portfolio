@@ -7,7 +7,7 @@ import {
   type Project
 } from '@/data/content'
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://portfolio-iu86.onrender.com/api/v1'
 
 export async function fetchProjects(): Promise<Project[]> {
   try {
