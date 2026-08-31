@@ -3,30 +3,32 @@
     "name": "Sudhanshu",
     "role": "B.Tech AI/ML · Multidisciplinary Systems",
     "institution": "Lovely Professional University",
-    "year": "2025-2029",
+    "year": "2024-2028",
     "classification": "Embedded Systems × Web Development × AI/ML",
     "bio": "I am an AI/ML student who likes to move between the physical and digital worlds — wiring sensors, shaping interfaces, and teaching machines to notice useful patterns. This notebook documents the experiments, questions, and systems I am building along the way.",
     "github": "github.com/flickstrokefs",
     "linkedin": "linkedin.com/in/flickstroke",
-    "coding": "leetcode.com/u/flickstroke"
+    "coding": "leetcode.com/u/flickstroke",
+    "email": "sudhanshuvermafs@gmail.com"
   },
   "academic": {
     "programme": "B.Tech Artificial Intelligence & Machine Learning",
     "specialization": "Artificial Intelligence & Machine Learning",
     "institution": "Lovely Professional University",
-    "registration_code": "REG: 2025-29-LPU",
-    "academic_span": "2025 — 2029",
-    "current_year": "YEAR 02 / 04",
-    "current_semester": 3,
+    "academic_span_start": 2024,
+    "academic_span_end": 2028,
+    "current_semester": 4,
     "total_semesters": 8,
+    "registration_code": "2024-28-LPU",
+    "registration_status": "ACTIVE",
+    "record_status": "VERIFIED",
     "cgpa": 9.3,
-    "max_cgpa": 10.0,
-    "status": "VERIFIED / ACTIVE",
+    "cgpa_scale": 10.0,
     "disciplines": [
-      { "id": "ds", "num": "01", "title": "DATA STRUCTURES", "subtitle": "Algorithms · Complexity", "accent": "red" },
-      { "id": "cv", "num": "02", "title": "COMPUTER VISION", "subtitle": "Spatial Signal Processing", "accent": "amber" },
-      { "id": "es", "num": "03", "title": "EMBEDDED SYSTEMS", "subtitle": "Firmware · Hardware Control", "accent": "olive" },
-      { "id": "hci", "num": "04", "title": "HUMAN-COMPUTER INT.", "subtitle": "Ergonomics · Interface Models", "accent": "slate" }
+      { "name": "Data Structures", "subtitle": "Algorithms · Complexity" },
+      { "name": "Computer Vision", "subtitle": "Spatial Signal Processing" },
+      { "name": "Embedded Systems", "subtitle": "Firmware · Hardware Control" },
+      { "name": "Human-Computer Int.", "subtitle": "Ergonomics · Interface Models" }
     ]
   },
   "projects": [
@@ -39,7 +41,21 @@
       "contribution": "Mapped the system flow, built the interface, and shaped the data contracts.",
       "outcome": "A clear prototype for turning noisy inputs into actionable alerts.",
       "learning": "Good systems make the next decision easier, not louder.",
-      "accent": "red"
+      "accent": "red",
+      "images": [
+        {
+          "src": "/projects/sentinel/cover.svg",
+          "alt": "Sentinel telemetry dashboard interface",
+          "caption": "Primary real-time anomaly monitoring HUD"
+        },
+        {
+          "src": "/projects/sentinel/image-1.svg",
+          "alt": "Feature vector extraction and clustering map",
+          "caption": "Sensor ingestion and anomaly buffer classification"
+        }
+      ],
+      "github": "https://github.com/flickstrokefs/sentinel",
+      "liveUrl": "https://sentinel-demo.vercel.app"
     },
     {
       "id": "aqua",
@@ -50,7 +66,10 @@
       "contribution": "Prototyped the sensor enclosure and wrote the first firmware loop.",
       "outcome": "A field-ready concept for sampling, logging, and flagging anomalies.",
       "learning": "The environment is part of the interface.",
-      "accent": "blue"
+      "accent": "blue",
+      "images": null,
+      "github": null,
+      "liveUrl": null
     },
     {
       "id": "miwa",
@@ -61,7 +80,10 @@
       "contribution": "Designed the interaction model and evaluated prompt behavior.",
       "outcome": "A focused assistant prototype with deliberate, human-readable states.",
       "learning": "Intelligence needs a good rhythm to feel trustworthy.",
-      "accent": "ink"
+      "accent": "ink",
+      "images": null,
+      "github": null,
+      "liveUrl": null
     },
     {
       "id": "avionics",
@@ -72,7 +94,10 @@
       "contribution": "Studied telemetry paths and documented component responsibilities.",
       "outcome": "A systems map connecting sensor, flight computer, and ground station.",
       "learning": "Constraints are where architecture becomes visible.",
-      "accent": "blue"
+      "accent": "blue",
+      "images": null,
+      "github": null,
+      "liveUrl": null
     },
     {
       "id": "heartbeat",
@@ -83,35 +108,41 @@
       "contribution": "Created the interaction prototype and tested low-power behavior.",
       "outcome": "A pocket-sized experiment in personal, ambient feedback.",
       "learning": "Small interfaces can carry surprisingly human stories.",
-      "accent": "red"
+      "accent": "red",
+      "images": null,
+      "github": null,
+      "liveUrl": null
     }
   ],
   "skills": [
     {
-      "category": "HARDWARE / FIRMWARE",
+      "category": "Hardware / Firmware",
+      "subtitle": "Interface with reality",
       "skills": [
-        { "name": "Arduino", "level": "INTERMEDIATE" },
-        { "name": "C / C++", "level": "INTERMEDIATE" },
-        { "name": "ESP32", "level": "BEGINNER" },
-        { "name": "Sensors", "level": "BEGINNER" }
+        { "name": "Arduino", "level": "Intermediate" },
+        { "name": "C/C++", "level": "Intermediate" },
+        { "name": "ESP32", "level": "Beginner" },
+        { "name": "Sensors", "level": "Beginner" }
       ]
     },
     {
-      "category": "WEB DEVELOPMENT",
+      "category": "Web Development",
+      "subtitle": "Building interfaces",
       "skills": [
-        { "name": "React", "level": "INTERMEDIATE" },
-        { "name": "TypeScript", "level": "INTERMEDIATE" },
-        { "name": "Next.js", "level": "BEGINNER" },
-        { "name": "FastAPI", "level": "BEGINNER" }
+        { "name": "React", "level": "Intermediate" },
+        { "name": "TypeScript", "level": "Intermediate" },
+        { "name": "Next.js", "level": "Beginner" },
+        { "name": "FastAPI", "level": "Beginner" }
       ]
     },
     {
       "category": "AI / ML",
+      "subtitle": "Teaching machines to notice",
       "skills": [
-        { "name": "Python", "level": "INTERMEDIATE" },
-        { "name": "scikit-learn", "level": "INTERMEDIATE" },
-        { "name": "Computer Vision", "level": "BEGINNER" },
-        { "name": "Prompt Design", "level": "BEGINNER" }
+        { "name": "Python", "level": "Intermediate" },
+        { "name": "scikit-learn", "level": "Intermediate" },
+        { "name": "Computer Vision", "level": "Beginner" },
+        { "name": "Prompt Design", "level": "Beginner" }
       ]
     }
   ],

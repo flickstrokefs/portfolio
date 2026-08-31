@@ -11,6 +11,31 @@ class ProfileSchema(BaseModel):
     github: str
     linkedin: str
     coding: str
+    email: str
+
+class DisciplineSchema(BaseModel):
+    name: str
+    subtitle: str
+
+class AcademicSchema(BaseModel):
+    programme: str
+    specialization: str
+    institution: str
+    academic_span_start: int
+    academic_span_end: int
+    current_semester: int
+    total_semesters: int
+    registration_code: str
+    registration_status: str
+    record_status: str
+    cgpa: float
+    cgpa_scale: float
+    disciplines: List[DisciplineSchema]
+
+class ProjectImageSchema(BaseModel):
+    src: str
+    alt: str
+    caption: Optional[str] = None
 
 class ProjectSchema(BaseModel):
     id: str
@@ -21,35 +46,18 @@ class ProjectSchema(BaseModel):
     contribution: str
     outcome: str
     learning: str
-    accent: str = Field(description="Accent color tag: 'red' | 'blue' | 'ink'")
-
-class DisciplineSchema(BaseModel):
-    id: str
-    num: str
-    title: str
-    subtitle: str
     accent: str
-
-class AcademicSchema(BaseModel):
-    programme: str
-    specialization: str
-    institution: str
-    registration_code: str
-    academic_span: str
-    current_year: str
-    current_semester: int
-    total_semesters: int
-    cgpa: float
-    max_cgpa: float
-    status: str
-    disciplines: List[DisciplineSchema]
+    images: Optional[List[ProjectImageSchema]] = None
+    github: Optional[str] = None
+    liveUrl: Optional[str] = None
 
 class SkillItem(BaseModel):
     name: str
-    level: str = Field(description="'INTERMEDIATE' | 'BEGINNER' | 'ADVANCED'")
+    level: str
 
 class SkillCompartment(BaseModel):
     category: str
+    subtitle: str
     skills: List[SkillItem]
 
 class AchievementSchema(BaseModel):
@@ -63,9 +71,9 @@ class RoadmapSchema(BaseModel):
     detail: str
 
 class ContactRequest(BaseModel):
-    name: str = Field(..., min_length=1, description="Sender name")
-    email: str = Field(..., description="Sender email address")
-    message: str = Field(..., min_length=1, description="Message content")
+    name: str = Field(..., min_length=1, max_length=100, description="Sender name")
+    email: EmailStr = Field(..., max_length=255, description="Sender email address")
+    message: str = Field(..., min_length=1, max_length=5000, description="Message content")
 
 class ContactResponse(BaseModel):
     ok: bool

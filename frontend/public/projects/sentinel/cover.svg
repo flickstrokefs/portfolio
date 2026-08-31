@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" width="800" height="450">
+  <rect width="800" height="450" fill="#071424" />
+  <rect x="20" y="20" width="760" height="36" fill="#0c2238" rx="3" />
+  <circle cx="42" cy="38" r="5" fill="#cf4a45" />
+  <circle cx="58" cy="38" r="5" fill="#dfc76d" />
+  <circle cx="74" cy="38" r="5" fill="#52b788" />
+  <text x="100" y="43" fill="#a9c5dc" font-family="monospace" font-size="12" font-weight="bold">SENTINEL / NEXAURA HUD // TELEMETRY STREAM v2.4</text>
+  <text x="680" y="43" fill="#cf4a45" font-family="monospace" font-size="11">[ LIVE 98.4% ]</text>
+  
+  <rect x="20" y="70" width="500" height="240" fill="#091b2c" stroke="#1c3852" rx="3" />
+  <path d="M 30,190 Q 90,80 150,190 T 270,190 T 390,90 T 510,190" fill="none" stroke="#cf4a45" stroke-width="2.5" />
+  <path d="M 30,220 Q 80,160 140,210 T 250,200 T 360,140 T 500,210" fill="none" stroke="#4a82af" stroke-width="1.5" stroke-dasharray="4,3" />
+  <text x="35" y="100" fill="#e0e8f0" font-family="sans-serif" font-size="14" font-weight="bold">REAL-TIME SIGNAL CLASSIFICATION HUD</text>
+  <text x="35" y="120" fill="#7d9cb5" font-family="monospace" font-size="10">FastAPI WebSocket Ingestion &amp; React HUD View</text>
+  
+  <rect x="535" y="70" width="245" height="240" fill="#091b2c" stroke="#1c3852" rx="3" />
+  <text x="550" y="98" fill="#dfc76d" font-family="monospace" font-size="11">ANOMALY PROB: 0.042</text>
+  <text x="550" y="128" fill="#a9c5dc" font-family="monospace" font-size="11">SAMPLING FREQ: 240 Hz</text>
+  <text x="550" y="158" fill="#a9c5dc" font-family="monospace" font-size="11">BUFFER QUEUE: 18 / 1024</text>
+  <text x="550" y="188" fill="#52b788" font-family="monospace" font-size="11">STATE: STABLE_SYNC</text>
+  
+  <rect x="20" y="325" width="760" height="105" fill="#040a12" stroke="#1c3852" rx="3" />
+  <text x="35" y="352" fill="#cf4a45" font-family="monospace" font-size="11">[11:18:04] INGESTION_BUS: Multi-channel sensor payload parsed (128 bytes)</text>
+  <text x="35" y="374" fill="#7d9cb5" font-family="monospace" font-size="11">[11:18:05] CLASSIFIER: Feature vector extraction latency = 3.2ms</text>
+  <text x="35" y="396" fill="#52b788" font-family="monospace" font-size="11">[11:18:06] BROADCAST: Real-time websocket dispatch to 1 client</text>
+</svg>
