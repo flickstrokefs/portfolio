@@ -80,7 +80,7 @@ This document provides a comprehensive mapping of all API endpoints across the *
     "registration_code": "REG: 2025-29-LPU",
     "academic_span": "2025 — 2029",
     "current_year": "YEAR 02 / 04",
-    "current_semester": 4,
+    "current_semester": 3,
     "total_semesters": 8,
     "cgpa": 8.4,
     "max_cgpa": 10.0,

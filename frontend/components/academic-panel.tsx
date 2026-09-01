@@ -19,7 +19,7 @@ export default function AcademicPanel({ academic }: AcademicPanelProps) {
   const currentYearNum = academic?.current_semester ? Math.ceil(academic.current_semester / 2) : 2
   const totalYearsNum = academic?.total_semesters ? Math.ceil(academic.total_semesters / 2) : 4
   const currentYear = `YEAR ${String(currentYearNum).padStart(2, '0')} / ${String(totalYearsNum).padStart(2, '0')}`
-  const currentSemester = academic?.current_semester ?? 4
+  const currentSemester = academic?.current_semester ?? 3
   const totalSemesters = academic?.total_semesters ?? 8
   const cgpa = academic?.cgpa !== undefined ? Number(academic.cgpa).toFixed(1) : '9.3'
   const maxCgpa = academic?.cgpa_scale !== undefined ? Number(academic.cgpa_scale).toFixed(1) : '10.0'
