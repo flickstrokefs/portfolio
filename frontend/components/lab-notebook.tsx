@@ -35,6 +35,8 @@ import ToolboxSchematic from './toolbox-schematic'
 import ExperimentArchive from './experiment-archive'
 import TargetCursor from './target-cursor'
 import BulletinBoard from './bulletin-board'
+import FieldExpeditions from './field-expeditions'
+import FutureTrajectory from './future-trajectory'
 
 const reveal = { hidden: { opacity: 0, y: 18 }, visible: { opacity: 1, y: 0, transition: { duration: .45 } } }
 function Section({ id, label, title, children, blueprint = false }: { id: string; label: string; title: string; children: React.ReactNode; blueprint?: boolean }) {
@@ -253,47 +255,14 @@ export function LabNotebook() {
       </Section>
 
       <Section id="achievements" label="06 / FIELD EXPEDITIONS" title="Outside the classroom">
-        <div className="timeline trail">
-          {achievementsList.map(item => (
-            <details className="timeline-item" key={item.date}>
-              <summary>
-                <span className="mono date">{item.date}</span>
-                <h3>{item.title}</h3>
-                <MapPin />
-              </summary>
-              <p className="hand">{item.note}</p>
-            </details>
-          ))}
-        </div>
+        <FieldExpeditions />
       </Section>
 
-      <Section id="roles" label="07 / CREDENTIALS" title="Places I have helped hold together.">
-        <div className="credential-grid">
-          {credentialsList.map((item, i) => (
-            <motion.div whileHover={{ y: -4, rotate: i % 2 ? 1 : -1 }} className="credential" key={item}>
-              <span className="mono">CRED-{String(i + 1).padStart(2, '0')}</span>
-              <strong>{item}</strong>
-              <span className="verified">VERIFIED</span>
-            </motion.div>
-          ))}
-        </div>
+      <Section id="roadmap" label="07 / FUTURE TRAJECTORY" title="The route is still being drawn." blueprint>
+        <FutureTrajectory roadmap={roadmapList} />
       </Section>
 
-      <Section id="roadmap" label="08 / FUTURE TRAJECTORY" title="The route is still being drawn." blueprint>
-        <div className="route-line" />
-        <div className="roadmap">
-          {roadmapList.map((stop, i) => (
-            <div className="waypoint" key={stop.label}>
-              <div className="waypoint-dot">{i + 1}</div>
-              <span className="mono">{stop.label}</span>
-              <h3>{stop.title}</h3>
-              <p>{stop.detail}</p>
-            </div>
-          ))}
-        </div>
-      </Section>
-
-      <Section id="contact" label="09 / OPEN CHANNEL" title="Send a signal.">
+      <Section id="contact" label="08 / OPEN CHANNEL" title="Send a signal.">
         <div className="contact-layout">
           <div className="contact-card">
             <Paperclip className="paperclip" />

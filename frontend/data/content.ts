@@ -95,7 +95,7 @@ export const academic: Academic = {
   institution: 'Lovely Professional University',
   academic_span_start: 2024,
   academic_span_end: 2028,
-  current_semester: 4,
+  current_semester: 3,
   total_semesters: 8,
   registration_code: '2024-28-LPU',
   registration_status: 'ACTIVE',
