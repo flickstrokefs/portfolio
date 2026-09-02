@@ -136,7 +136,8 @@ export function LabNotebook() {
   async function submitContact(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setStatus('TRANSMITTING...')
-    const form = new FormData(e.currentTarget)
+    const formElement = e.currentTarget
+    const form = new FormData(formElement)
     const payload = Object.fromEntries(form)
     try {
       const response = await fetch('/api/contact', {
@@ -144,8 +145,13 @@ export function LabNotebook() {
         body: JSON.stringify(payload),
         headers: { 'Content-Type': 'application/json' }
       })
-      setStatus(response.ok ? 'RECEIVED / MESSAGE LOGGED.' : 'TRANSMISSION FAILED.')
-      if (response.ok) e.currentTarget.reset()
+      if (response.ok) {
+        const data = await response.json().catch(() => null)
+        setStatus(data?.message || 'RECEIVED / MESSAGE LOGGED.')
+        formElement.reset()
+      } else {
+        setStatus('TRANSMISSION FAILED.')
+      }
     } catch {
       setStatus('TRANSMISSION FAILED.')
     }

@@ -1,14 +1,23 @@
 import os
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from routers import profile, projects, skills, contact
+from database import init_db
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Initialize Neon PostgreSQL tables on startup
+    init_db()
+    yield
 
 app = FastAPI(
     title="S/LAB Portfolio Field Notebook API",
     description="RESTful backend API for Sudhanshu Verma's multidisciplinary portfolio.",
     version="1.0.0",
     docs_url="/docs",
-    redoc_url="/redoc"
+    redoc_url="/redoc",
+    lifespan=lifespan
 )
 
 # Explicit allowed origins list (configurable via ALLOWED_ORIGINS env var on Render)
