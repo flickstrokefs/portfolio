@@ -1,4 +1,5 @@
 import { Analytics } from '@vercel/analytics/next'
+import { SpeedInsights } from '@vercel/speed-insights/next'
 import { DM_Mono, Instrument_Serif, Kalam } from 'next/font/google'
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
@@ -16,5 +17,5 @@ export const metadata: Metadata = {
 export const viewport: Viewport = { colorScheme: 'light', themeColor: '#eee8d8' }
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en" className="bg-background"><body className={`${serif.variable} ${mono.variable} ${hand.variable} antialiased`}>{children}{process.env.NODE_ENV === 'production' && <Analytics />}</body></html>
+  return <html lang="en" className="bg-background"><body className={`${serif.variable} ${mono.variable} ${hand.variable} antialiased`}>{children}{process.env.NODE_ENV === 'production' && <Analytics />}<SpeedInsights /></body></html>
 }
