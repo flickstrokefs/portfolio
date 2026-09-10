@@ -1,178 +1,244 @@
 import {
-  profile as staticProfile,
-  academic as staticAcademic,
-  skills as staticSkills,
-  projects as staticProjects,
-  achievements as staticAchievements,
-  responsibilities as staticResponsibilities,
-  roadmap as staticRoadmap,
+  staticProfile,
+  staticAcademic,
+  staticSkills,
+  staticProjects,
+  staticAchievements,
+  staticResponsibilities,
+  staticRoadmap,
   type Profile,
   type Academic,
   type Discipline,
   type SkillCompartment,
   type SkillItem,
   type Project,
+  type ProjectImage,
   type Achievement,
   type RoadmapItem
 } from '@/data/content'
 
-// Base URL prefers process.env.NEXT_PUBLIC_API_URL, then falls back to cloud Render backend
-const API_HOST = process.env.NEXT_PUBLIC_API_URL || 'https://portfolio-iu86.onrender.com'
+export type {
+  Profile,
+  Academic,
+  Discipline,
+  SkillCompartment,
+  SkillItem,
+  Project,
+  ProjectImage,
+  Achievement,
+  RoadmapItem
+}
+
+// Base URL prefers process.env.NEXT_PUBLIC_API_URL, then process.env.BACKEND_API_URL, then Render cloud backend
+const API_HOST = process.env.NEXT_PUBLIC_API_URL || process.env.BACKEND_API_URL || 'https://portfolio-iu86.onrender.com'
 const API_BASE = `${API_HOST.replace(/\/$/, '')}/api/v1`
 
 export async function fetchProfile(): Promise<Profile> {
-  try {
-    const res = await fetch(`${API_BASE}/profile`, { cache: 'no-store' })
-    if (!res.ok) throw new Error(`HTTP ${res.status}`)
-    const data = await res.json()
-    return {
-      name: data.name || staticProfile.name,
-      title: data.title || staticProfile.title,
-      bio: data.bio || staticProfile.bio,
-      institution: data.institution || staticProfile.institution,
-      year: data.year || staticProfile.year,
-      classification: data.classification || staticProfile.classification,
-      github: data.github || staticProfile.github,
-      linkedin: data.linkedin || staticProfile.linkedin,
-      coding: data.coding || staticProfile.coding,
-      email: data.email || staticProfile.email
-    }
-  } catch {
-    return staticProfile
+  const res = await fetch(`${API_BASE}/profile`, { cache: 'no-store' })
+  if (!res.ok) throw new Error(`Failed to fetch profile: HTTP ${res.status}`)
+  const data = await res.json()
+  return {
+    name: String(data.name || staticProfile.name),
+    role: String(data.role || data.title || staticProfile.role),
+    institution: String(data.institution || staticProfile.institution),
+    year: String(data.year || staticProfile.year),
+    classification: String(data.classification || staticProfile.classification),
+    bio: String(data.bio || staticProfile.bio),
+    github: String(data.github || staticProfile.github),
+    linkedin: String(data.linkedin || staticProfile.linkedin),
+    coding: String(data.coding || staticProfile.coding),
+    email: String(data.email || staticProfile.email)
   }
 }
 
 export async function fetchAcademic(): Promise<Academic> {
-  try {
-    const res = await fetch(`${API_BASE}/academic`, { cache: 'no-store' })
-    if (!res.ok) throw new Error(`HTTP ${res.status}`)
-    const raw = await res.json()
+  const res = await fetch(`${API_BASE}/academic`, { cache: 'no-store' })
+  if (!res.ok) throw new Error(`Failed to fetch academic: HTTP ${res.status}`)
+  const raw = await res.json()
 
-    let spanStart = raw.academic_span_start
-    let spanEnd = raw.academic_span_end
-    if ((spanStart === undefined || spanEnd === undefined) && raw.academic_span) {
-      const parts = String(raw.academic_span).split('—').map((s: string) => s.trim())
-      spanStart = parseInt(parts[0], 10) || 2024
-      spanEnd = parseInt(parts[1], 10) || 2028
-    }
+  let spanStart = typeof raw.academic_span_start === 'number'
+    ? raw.academic_span_start
+    : (typeof raw.academicSpanStart === 'number' ? raw.academicSpanStart : undefined)
 
-    const disciplines: Discipline[] = Array.isArray(raw.disciplines)
-      ? raw.disciplines.map((d: any) => ({
-          name: d.name || d.title || 'Discipline',
-          subtitle: d.subtitle || ''
-        }))
-      : staticAcademic.disciplines
+  let spanEnd = typeof raw.academic_span_end === 'number'
+    ? raw.academic_span_end
+    : (typeof raw.academicSpanEnd === 'number' ? raw.academicSpanEnd : undefined)
 
-    return {
-      programme: raw.programme || staticAcademic.programme,
-      specialization: raw.specialization || staticAcademic.specialization,
-      institution: raw.institution || staticAcademic.institution,
-      academic_span_start: spanStart ?? staticAcademic.academic_span_start,
-      academic_span_end: spanEnd ?? staticAcademic.academic_span_end,
-      current_semester: raw.current_semester ?? staticAcademic.current_semester,
-      total_semesters: raw.total_semesters ?? staticAcademic.total_semesters,
-      registration_code: raw.registration_code || staticAcademic.registration_code,
-      registration_status: raw.registration_status || (raw.status ? raw.status.split('/')[1]?.trim() : 'ACTIVE') || 'ACTIVE',
-      record_status: raw.record_status || (raw.status ? raw.status.split('/')[0]?.trim() : 'VERIFIED') || 'VERIFIED',
-      cgpa: raw.cgpa !== undefined ? Number(raw.cgpa) : staticAcademic.cgpa,
-      cgpa_scale: (raw.cgpa_scale !== undefined ? Number(raw.cgpa_scale) : undefined) ?? (raw.max_cgpa !== undefined ? Number(raw.max_cgpa) : undefined) ?? staticAcademic.cgpa_scale,
-      disciplines
-    }
-  } catch {
-    return staticAcademic
+  if ((spanStart === undefined || spanEnd === undefined) && raw.academic_span) {
+    const parts = String(raw.academic_span).split('—').map((s: string) => s.trim())
+    spanStart = parseInt(parts[0], 10) || 2024
+    spanEnd = parseInt(parts[1], 10) || 2028
+  }
+
+  const resolvedSpanStart = spanStart ?? staticAcademic.academicSpanStart
+  const resolvedSpanEnd = spanEnd ?? staticAcademic.academicSpanEnd
+
+  const disciplines: Discipline[] = Array.isArray(raw.disciplines)
+    ? raw.disciplines.map((d: { name?: string; title?: string; subtitle?: string }) => ({
+        name: String(d.name || d.title || 'Discipline'),
+        subtitle: String(d.subtitle || '')
+      }))
+    : staticAcademic.disciplines
+
+  const currentSem = typeof raw.current_semester === 'number'
+    ? raw.current_semester
+    : (typeof raw.currentSemester === 'number' ? raw.currentSemester : staticAcademic.currentSemester)
+
+  const totalSem = typeof raw.total_semesters === 'number'
+    ? raw.total_semesters
+    : (typeof raw.totalSemesters === 'number' ? raw.totalSemesters : staticAcademic.totalSemesters)
+
+  const regCode = String(raw.registration_code || raw.registrationCode || staticAcademic.registrationCode)
+  const regStatus = String(raw.registration_status || raw.registrationStatus || staticAcademic.registrationStatus)
+  const recStatus = String(raw.record_status || raw.recordStatus || staticAcademic.recordStatus)
+  const cgpaVal = raw.cgpa !== undefined ? Number(raw.cgpa) : staticAcademic.cgpa
+  const cgpaScaleVal = raw.cgpa_scale !== undefined
+    ? Number(raw.cgpa_scale)
+    : (raw.cgpaScale !== undefined ? Number(raw.cgpaScale) : (raw.max_cgpa !== undefined ? Number(raw.max_cgpa) : staticAcademic.cgpaScale))
+
+  return {
+    programme: String(raw.programme || staticAcademic.programme),
+    specialization: String(raw.specialization || staticAcademic.specialization),
+    institution: String(raw.institution || staticAcademic.institution),
+    academicSpanStart: resolvedSpanStart,
+    academicSpanEnd: resolvedSpanEnd,
+    currentSemester: currentSem,
+    totalSemesters: totalSem,
+    registrationCode: regCode,
+    registrationStatus: regStatus,
+    recordStatus: recStatus,
+    cgpa: cgpaVal,
+    cgpaScale: cgpaScaleVal,
+    disciplines,
+    // snake_case aliases for compatibility
+    academic_span_start: resolvedSpanStart,
+    academic_span_end: resolvedSpanEnd,
+    current_semester: currentSem,
+    total_semesters: totalSem,
+    registration_code: regCode,
+    registration_status: regStatus,
+    record_status: recStatus,
+    cgpa_scale: cgpaScaleVal
   }
 }
 
 export async function fetchProjects(): Promise<Project[]> {
-  try {
-    const res = await fetch(`${API_BASE}/projects`, { cache: 'no-store' })
-    if (!res.ok) throw new Error(`HTTP ${res.status}`)
-    const raw = await res.json()
-    const list: any[] = Array.isArray(raw) ? raw : (raw && Array.isArray(raw.projects) ? raw.projects : [])
-    if (!list.length) return staticProjects
+  const res = await fetch(`${API_BASE}/projects`, { cache: 'no-store' })
+  if (!res.ok) throw new Error(`Failed to fetch projects: HTTP ${res.status}`)
+  const raw = await res.json()
+  const list: unknown[] = Array.isArray(raw)
+    ? raw
+    : (raw && typeof raw === 'object' && 'projects' in raw && Array.isArray((raw as { projects: unknown[] }).projects)
+      ? (raw as { projects: unknown[] }).projects
+      : [])
 
-    return list.map((p, i) => ({
-      id: p.id || staticProjects[i]?.id || `proj-${i + 1}`,
-      title: p.title || staticProjects[i]?.title || 'Untitled Project',
-      synopsis: p.synopsis || staticProjects[i]?.synopsis || '',
-      accent: p.accent || staticProjects[i]?.accent || 'red',
-      status: p.status || staticProjects[i]?.status || 'ACTIVE',
-      stack: Array.isArray(p.stack) ? p.stack : (staticProjects[i]?.stack || []),
-      objective: p.objective || staticProjects[i]?.objective || '',
-      tools: Array.isArray(p.tools) ? p.tools : (staticProjects[i]?.tools || []),
-      takeaway: p.takeaway || staticProjects[i]?.takeaway || '',
-      quote: p.quote || staticProjects[i]?.quote || '',
-      code: p.code || staticProjects[i]?.code || `EXP-${String(i + 1).padStart(2, '0')}`,
-      images: Array.isArray(p.images) && p.images.length > 0 ? p.images : null,
-      github: p.github || null,
-      liveUrl: p.liveUrl || null
-    }))
-  } catch {
-    return staticProjects
-  }
+  if (!list.length) return staticProjects
+
+  return list.map((item, i) => {
+    const p = item as Partial<Project> & Record<string, unknown>
+    const accentVal = (p.accent === 'red' || p.accent === 'blue' || p.accent === 'ink')
+      ? p.accent
+      : (staticProjects[i]?.accent || 'red')
+
+    let imagesList: ProjectImage[] | null = null
+    if (Array.isArray(p.images) && p.images.length > 0) {
+      imagesList = p.images.map((img: { src?: string; alt?: string; caption?: string }) => ({
+        src: String(img.src || ''),
+        alt: String(img.alt || ''),
+        caption: img.caption ? String(img.caption) : undefined
+      }))
+    } else if (staticProjects[i]?.images) {
+      imagesList = staticProjects[i].images
+    }
+
+    return {
+      id: String(p.id || staticProjects[i]?.id || `proj-${i + 1}`),
+      code: String(p.code || staticProjects[i]?.code || `EXP-${String(i + 1).padStart(2, '0')}`),
+      title: String(p.title || staticProjects[i]?.title || 'Untitled Project'),
+      objective: String(p.objective || staticProjects[i]?.objective || ''),
+      tools: Array.isArray(p.tools) ? p.tools.map(String) : (staticProjects[i]?.tools || []),
+      contribution: String(p.contribution || staticProjects[i]?.contribution || ''),
+      outcome: String(p.outcome || staticProjects[i]?.outcome || ''),
+      learning: String(p.learning || staticProjects[i]?.learning || ''),
+      accent: accentVal,
+      images: imagesList,
+      github: typeof p.github === 'string' ? p.github : (staticProjects[i]?.github || null),
+      liveUrl: typeof p.liveUrl === 'string' ? p.liveUrl : (staticProjects[i]?.liveUrl || null)
+    }
+  })
 }
 
 export async function fetchSkills(): Promise<SkillCompartment[]> {
-  try {
-    const res = await fetch(`${API_BASE}/skills`, { cache: 'no-store' })
-    if (!res.ok) throw new Error(`HTTP ${res.status}`)
-    const raw = await res.json()
-    const list: any[] = Array.isArray(raw) ? raw : (raw && Array.isArray(raw.skills) ? raw.skills : [])
-    if (!list.length) return staticSkills
+  const res = await fetch(`${API_BASE}/skills`, { cache: 'no-store' })
+  if (!res.ok) throw new Error(`Failed to fetch skills: HTTP ${res.status}`)
+  const raw = await res.json()
+  const list: unknown[] = Array.isArray(raw)
+    ? raw
+    : (raw && typeof raw === 'object' && 'skills' in raw && Array.isArray((raw as { skills: unknown[] }).skills)
+      ? (raw as { skills: unknown[] }).skills
+      : [])
 
-    const defaultSubtitles: Record<string, string> = {
-      'HARDWARE / FIRMWARE': 'Interface with reality',
-      'Hardware / Firmware': 'Interface with reality',
-      'WEB DEVELOPMENT': 'Full-stack systems & interaction',
-      'Web Development': 'Full-stack systems & interaction',
-      'AI / ML': 'Intelligent modeling & perception',
-      'AI/ML': 'Intelligent modeling & perception'
-    }
+  if (!list.length) return staticSkills
 
-    return list.map((c, i) => ({
-      category: c.category || staticSkills[i]?.category || 'Instruments',
-      subtitle: c.subtitle || defaultSubtitles[c.category] || staticSkills[i]?.subtitle || 'Applied Domain',
-      skills: Array.isArray(c.skills)
-        ? c.skills.map((s: any) => ({
-            name: s.name || '',
-            level: s.level || 'Intermediate'
-          }))
-        : (staticSkills[i]?.skills || [])
-    }))
-  } catch {
-    return staticSkills
+  const defaultSubtitles: Record<string, string> = {
+    'HARDWARE / FIRMWARE': 'Interface with reality',
+    'Hardware / Firmware': 'Interface with reality',
+    'WEB DEVELOPMENT': 'Building interfaces',
+    'Web Development': 'Building interfaces',
+    'AI / ML': 'Teaching machines to notice',
+    'AI/ML': 'Teaching machines to notice'
   }
+
+  return list.map((item, i) => {
+    const c = item as Partial<SkillCompartment> & Record<string, unknown>
+    const category = String(c.category || staticSkills[i]?.category || 'Instruments')
+    const subtitle = String(c.subtitle || defaultSubtitles[category] || staticSkills[i]?.subtitle || 'Applied Domain')
+    const rawSkills = Array.isArray(c.skills) ? c.skills : []
+
+    const skills: SkillItem[] = rawSkills.length > 0
+      ? rawSkills.map((s: { name?: string; level?: string }) => ({
+          name: String(s.name || ''),
+          level: String(s.level || 'Intermediate')
+        }))
+      : (staticSkills[i]?.skills || [])
+
+    return {
+      category,
+      subtitle,
+      skills
+    }
+  })
 }
 
 export async function fetchAchievements(): Promise<Achievement[]> {
-  try {
-    const res = await fetch(`${API_BASE}/achievements`, { cache: 'no-store' })
-    if (!res.ok) throw new Error(`HTTP ${res.status}`)
-    const data = await res.json()
-    return Array.isArray(data) ? data : (data?.achievements || staticAchievements)
-  } catch {
-    return staticAchievements
+  const res = await fetch(`${API_BASE}/achievements`, { cache: 'no-store' })
+  if (!res.ok) throw new Error(`Failed to fetch achievements: HTTP ${res.status}`)
+  const data = await res.json()
+  if (Array.isArray(data)) return data
+  if (data && typeof data === 'object' && 'achievements' in data && Array.isArray(data.achievements)) {
+    return data.achievements
   }
+  return staticAchievements
 }
 
 export async function fetchCredentials(): Promise<string[]> {
-  try {
-    const res = await fetch(`${API_BASE}/credentials`, { cache: 'no-store' })
-    if (!res.ok) throw new Error(`HTTP ${res.status}`)
-    const data = await res.json()
-    return Array.isArray(data) ? data : (data?.credentials || staticResponsibilities)
-  } catch {
-    return staticResponsibilities
+  const res = await fetch(`${API_BASE}/credentials`, { cache: 'no-store' })
+  if (!res.ok) throw new Error(`Failed to fetch credentials: HTTP ${res.status}`)
+  const data = await res.json()
+  if (Array.isArray(data)) return data
+  if (data && typeof data === 'object' && 'credentials' in data && Array.isArray(data.credentials)) {
+    return data.credentials
   }
+  return staticResponsibilities
 }
 
 export async function fetchRoadmap(): Promise<RoadmapItem[]> {
-  try {
-    const res = await fetch(`${API_BASE}/roadmap`, { cache: 'no-store' })
-    if (!res.ok) throw new Error(`HTTP ${res.status}`)
-    const data = await res.json()
-    return Array.isArray(data) ? data : (data?.roadmap || staticRoadmap)
-  } catch {
-    return staticRoadmap
+  const res = await fetch(`${API_BASE}/roadmap`, { cache: 'no-store' })
+  if (!res.ok) throw new Error(`Failed to fetch roadmap: HTTP ${res.status}`)
+  const data = await res.json()
+  if (Array.isArray(data)) return data
+  if (data && typeof data === 'object' && 'roadmap' in data && Array.isArray(data.roadmap)) {
+    return data.roadmap
   }
+  return staticRoadmap
 }

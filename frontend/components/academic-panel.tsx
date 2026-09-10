@@ -14,17 +14,24 @@ export default function AcademicPanel({ academic }: AcademicPanelProps) {
 
   const programme = academic?.programme || 'B.Tech Artificial Intelligence & Machine Learning'
   const institution = academic?.institution || 'Lovely Professional University'
-  const registrationCode = academic?.registration_code || '2024-28-LPU'
-  const academicSpan = academic ? `${academic.academic_span_start} — ${academic.academic_span_end}` : '2024 — 2028'
-  const currentYearNum = academic?.current_semester ? Math.ceil(academic.current_semester / 2) : 2
-  const totalYearsNum = academic?.total_semesters ? Math.ceil(academic.total_semesters / 2) : 4
+  const registrationCode = academic?.registrationCode || academic?.registration_code || '2024-28-LPU'
+  const spanStart = academic?.academicSpanStart ?? academic?.academic_span_start ?? 2024
+  const spanEnd = academic?.academicSpanEnd ?? academic?.academic_span_end ?? 2028
+  const academicSpan = `${spanStart} — ${spanEnd}`
+
+  const currentSemester = academic?.currentSemester ?? academic?.current_semester ?? 3
+  const totalSemesters = academic?.totalSemesters ?? academic?.total_semesters ?? 8
+  const currentYearNum = currentSemester ? Math.ceil(currentSemester / 2) : 1
+  const totalYearsNum = totalSemesters ? Math.ceil(totalSemesters / 2) : 4
   const currentYear = `YEAR ${String(currentYearNum).padStart(2, '0')} / ${String(totalYearsNum).padStart(2, '0')}`
-  const currentSemester = academic?.current_semester ?? 3
-  const totalSemesters = academic?.total_semesters ?? 8
-  const cgpa = academic?.cgpa !== undefined ? Number(academic.cgpa).toFixed(1) : '9.3'
-  const maxCgpa = academic?.cgpa_scale !== undefined ? Number(academic.cgpa_scale).toFixed(1) : '10.0'
-  const registrationStatus = academic?.registration_status || 'ACTIVE'
-  const recordStatus = academic?.record_status || 'VERIFIED'
+
+  const registrationStatus = academic?.registrationStatus || academic?.registration_status || 'ACTIVE'
+  const recordStatus = academic?.recordStatus || academic?.record_status || 'VERIFIED'
+  const cgpa = academic?.cgpa !== undefined ? Number(academic.cgpa).toFixed(2) : '9.27'
+  const cgpaScale = (academic?.cgpaScale ?? academic?.cgpa_scale) !== undefined
+    ? Number(academic?.cgpaScale ?? academic?.cgpa_scale).toFixed(1)
+    : '10.0'
+
   const disciplinesList = academic?.disciplines || []
 
   return (
@@ -171,24 +178,25 @@ export default function AcademicPanel({ academic }: AcademicPanelProps) {
                 {/* Dynamic Semester Dots Timeline */}
                 <div className="semester-dots-timeline" aria-label={`Semester progress: ${currentSemester} of ${totalSemesters} semesters completed`}>
                   <div className="timeline-year-labels mono">
-                    <span>YEAR 01</span>
-                    <span>YEAR 02</span>
-                    <span>YEAR 03</span>
-                    <span>YEAR 04</span>
+                    {[...Array(totalYearsNum)].map((_, yIdx) => (
+                      <span key={yIdx}>YEAR {String(yIdx + 1).padStart(2, '0')}</span>
+                    ))}
                   </div>
                   <div className="timeline-dots-track">
                     <div className="timeline-track-line" />
                     <div className="dots-row">
                       {[...Array(totalSemesters)].map((_, idx) => {
                         const sem = idx + 1
+                        const isCompleted = sem < currentSemester
+                        const isCurrent = sem === currentSemester
                         return (
                           <div
                             key={sem}
-                            className={`dot-station ${sem <= currentSemester ? 'filled' : 'hollow'} ${sem === currentSemester ? 'current-station' : ''}`}
+                            className={`dot-station ${isCompleted ? 'filled' : isCurrent ? 'current-station' : 'hollow'}`}
                           >
                             <span className="dot-circle" />
                             <span className="dot-num mono">{String(sem).padStart(2, '0')}</span>
-                            {sem === currentSemester && (
+                            {isCurrent && (
                               <div className="here-pointer mono">
                                 <span className="pointer-triangle">▲</span>
                                 <span className="pointer-text">YOU ARE HERE</span>
@@ -210,7 +218,7 @@ export default function AcademicPanel({ academic }: AcademicPanelProps) {
                   <span className="field-label-coral mono">CUMULATIVE GPA</span>
                   <div className="gpa-figures">
                     <span className="gpa-val serif">{cgpa}</span>
-                    <span className="gpa-max mono">/ <span className="coral-accent">{maxCgpa}</span></span>
+                    <span className="gpa-max mono">/ <span className="coral-accent">{cgpaScale}</span></span>
                   </div>
                 </div>
 

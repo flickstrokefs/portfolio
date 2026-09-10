@@ -20,16 +20,25 @@ export interface Academic {
   programme: string
   specialization: string
   institution: string
-  academic_span_start: number
-  academic_span_end: number
-  current_semester: number
-  total_semesters: number
-  registration_code: string
-  registration_status: string
-  record_status: string
+  academicSpanStart: number
+  academicSpanEnd: number
+  currentSemester: number
+  totalSemesters: number
+  registrationCode: string
+  registrationStatus: string
+  recordStatus: string
   cgpa: number
-  cgpa_scale: number
+  cgpaScale: number
   disciplines: Discipline[]
+  // snake_case aliases for compatibility with backend responses
+  academic_span_start?: number
+  academic_span_end?: number
+  current_semester?: number
+  total_semesters?: number
+  registration_code?: string
+  registration_status?: string
+  record_status?: string
+  cgpa_scale?: number
 }
 
 export interface SkillItem {
@@ -46,7 +55,7 @@ export interface SkillCompartment {
 export interface ProjectImage {
   src: string
   alt: string
-  caption?: string | null
+  caption?: string
 }
 
 export interface Project {
@@ -89,10 +98,19 @@ export const profile: Profile = {
   email: 'sudhanshuvermafs@gmail.com'
 }
 
-export const academic: Academic = {
+export const staticAcademic: Academic = {
   programme: 'B.Tech Artificial Intelligence & Machine Learning',
   specialization: 'Artificial Intelligence & Machine Learning',
   institution: 'Lovely Professional University',
+  academicSpanStart: 2024,
+  academicSpanEnd: 2028,
+  currentSemester: 3,
+  totalSemesters: 8,
+  registrationCode: '2024-28-LPU',
+  registrationStatus: 'ACTIVE',
+  recordStatus: 'VERIFIED',
+  cgpa: 9.27,
+  cgpaScale: 10.0,
   academic_span_start: 2024,
   academic_span_end: 2028,
   current_semester: 3,
@@ -100,7 +118,6 @@ export const academic: Academic = {
   registration_code: '2024-28-LPU',
   registration_status: 'ACTIVE',
   record_status: 'VERIFIED',
-  cgpa: 9.3,
   cgpa_scale: 10.0,
   disciplines: [
     { name: 'Data Structures', subtitle: 'Algorithms · Complexity' },
@@ -110,7 +127,9 @@ export const academic: Academic = {
   ]
 }
 
-export const skills: SkillCompartment[] = [
+export const academic: Academic = staticAcademic
+
+export const staticSkills: SkillCompartment[] = [
   {
     category: 'Hardware / Firmware',
     subtitle: 'Interface with reality',
@@ -143,7 +162,9 @@ export const skills: SkillCompartment[] = [
   }
 ]
 
-export const projects: Project[] = [
+export const skills: SkillCompartment[] = staticSkills
+
+export const staticProjects: Project[] = [
   {
     id: 'sentinel',
     code: 'EXP-01',
@@ -227,45 +248,54 @@ export const projects: Project[] = [
   }
 ]
 
-export const achievements: Achievement[] = [
+export const projects: Project[] = staticProjects
+
+export const staticAchievements: Achievement[] = [
   {
-    date: '2025.11',
-    title: 'National Hackathon / Shortlist',
-    note: 'A weekend of diagrams, bad coffee, and one surprisingly elegant prototype.'
+    date: 'OCT 2024',
+    title: 'Smart India Hackathon (SIH) Internal Nominee',
+    note: 'Selected at university stage for IoT automated sensor station prototype.'
   },
   {
-    date: '2025.08',
-    title: 'Tech Fest / Volunteer Lead',
-    note: 'Coordinated rooms, people, and a small army of extension cords.'
+    date: 'NOV 2024',
+    title: 'NASA Space Apps Challenge Participant',
+    note: 'Explored Earth observation telemetry pipelines under 48-hour deadline.'
   },
   {
-    date: '2025.03',
-    title: 'Open Source / First Contribution',
-    note: 'Learned that a tiny documentation fix still moves the whole machine forward.'
+    date: 'FEB 2025',
+    title: 'Robotics & Mechatronics Symposium Finalist',
+    note: 'Demonstrated low-latency telemetry transceiver module with fail-safes.'
   }
 ]
 
-export const responsibilities: string[] = [
-  'AI Club · Core Member',
-  'Robotics Lab · Project Lead',
-  'Campus Tech Fest · Coordinator',
-  'Peer Learning Circle · Mentor'
+export const achievements: Achievement[] = staticAchievements
+
+export const staticResponsibilities: string[] = [
+  'Technical Lead · University Robotics & Automation Chapter',
+  'Hardware Systems Contributor · IoT Research Group',
+  'Peer Mentor · Data Structures & Algorithms Study Track',
+  'Field Operations Member · LPU Space Systems Club'
 ]
 
-export const roadmap: RoadmapItem[] = [
+export const responsibilities: string[] = staticResponsibilities
+
+export const staticRoadmap: RoadmapItem[] = [
   {
-    label: 'NOW',
-    title: 'Build fundamentals',
-    detail: 'Ship small systems. Read deeply. Keep the notes honest.'
+    label: 'NOW / SEM 03',
+    title: 'Embedded Linux & Spatial Vision',
+    detail: 'Building deterministic pipelines on ARM targets and exploring OpenCV sensor fusion.'
   },
   {
-    label: 'NEXT',
-    title: 'Join a research-minded team',
-    detail: 'Work where embedded data meets usable intelligence.'
+    label: 'NEXT / SEM 04',
+    title: 'Edge Tensor Runtime & Low-Power RF',
+    detail: 'Quantizing neural network weights for microcontrollers using micro-TVM and LoRa.'
   },
   {
-    label: 'LATER',
-    title: 'Design humane machines',
-    detail: 'Lead products and experiments with real-world consequence.'
+    label: 'LATER / YEARS 03-04',
+    title: 'Autonomous System Deployment',
+    detail: 'Field validation of multi-agent robotic networks under unreliable link conditions.'
   }
 ]
+
+export const roadmap: RoadmapItem[] = staticRoadmap
+export const staticProfile: Profile = profile
