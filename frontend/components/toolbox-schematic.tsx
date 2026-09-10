@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 import { Cpu, Code2, Brain, Zap } from 'lucide-react'
-import { type SkillCompartment, skills as staticSkills } from '@/data/content'
+import { type SkillCompartment, staticSkills } from '@/data/content'
 
 interface ToolboxSchematicProps {
   skills?: SkillCompartment[]
@@ -31,8 +31,6 @@ function getDomainMeta(category: string, index: number) {
   if (cat.includes('hardware') || cat.includes('firmware')) {
     return {
       id: 'hardware',
-      code: 'MOD-01',
-      serialNo: 'SN: HW-8842-A',
       icon: 'cpu' as const,
       annotation: '“Sensing the real world.”'
     }
@@ -40,8 +38,6 @@ function getDomainMeta(category: string, index: number) {
   if (cat.includes('web')) {
     return {
       id: 'webdev',
-      code: 'MOD-02',
-      serialNo: 'SN: WEB-4096-B',
       icon: 'code' as const,
       annotation: '“Making systems people can use.”'
     }
@@ -49,18 +45,14 @@ function getDomainMeta(category: string, index: number) {
   if (cat.includes('ai') || cat.includes('ml')) {
     return {
       id: 'aiml',
-      code: 'MOD-03',
-      serialNo: 'SN: AI-2048-C',
       icon: 'brain' as const,
       annotation: '“Teaching machines to notice patterns.”'
     }
   }
   return {
     id: `mod-${index + 1}`,
-    code: `MOD-0${index + 1}`,
-    serialNo: `SN: MOD-${index + 1}`,
     icon: 'code' as const,
-    annotation: '“Engineering the system.”'
+    annotation: '“Applied engineering.”'
   }
 }
 
@@ -207,8 +199,6 @@ export default function ToolboxSchematic({ skills = staticSkills }: ToolboxSchem
       const meta = getDomainMeta(compartment.category, index)
       return {
         id: meta.id,
-        code: meta.code,
-        serialNo: meta.serialNo,
         category: compartment.category.toUpperCase(),
         subtitle: (compartment.subtitle || '').toUpperCase(),
         icon: meta.icon,
@@ -267,11 +257,6 @@ export default function ToolboxSchematic({ skills = staticSkills }: ToolboxSchem
             <path d="M 2,5 Q 40,8 85,4 T 128,5" fill="none" stroke="var(--red)" strokeWidth="2" strokeLinecap="round" />
           </svg>
         </div>
-
-        <div className="corner-blueprint-ref mono">
-          <span>SYSTEM SCHEMATIC // DWG-03-REV5</span>
-          <span className="ref-status">CONNECTED HARNESS</span>
-        </div>
       </div>
 
       {/* 1. THREE PHYSICAL INSTRUMENT PANELS */}
@@ -287,10 +272,6 @@ export default function ToolboxSchematic({ skills = staticSkills }: ToolboxSchem
 
               {/* Panel Header */}
               <div className="domain-panel-header">
-                <div className="title-row-top">
-                  <span className="panel-mod-code mono">{domain.code}</span>
-                  <span className="panel-serial-no mono">{domain.serialNo}</span>
-                </div>
                 <div className="title-icon-group">
                   {domain.icon === 'cpu' && <Cpu className="domain-icon" />}
                   {domain.icon === 'code' && <Code2 className="domain-icon" />}
@@ -309,14 +290,14 @@ export default function ToolboxSchematic({ skills = staticSkills }: ToolboxSchem
                 </svg>
               </div>
 
-              {/* ──────────────────────────── MAIN HORIZONTAL CIRCUIT BUS ─────────────────────────── */}
+              {/* MAIN HORIZONTAL CIRCUIT BUS */}
               <div className="panel-circuit-bus-line" aria-hidden="true">
                 <span className="bus-track-wire" />
                 <span className="bus-terminal-point left" />
                 <span className="bus-terminal-point right" />
               </div>
 
-              {/* 2. 2×2 CIRCUIT COMPONENT SKILLS */}
+              {/* 2×2 CIRCUIT COMPONENT SKILLS */}
               <div className="panel-skills-grid-2x2">
                 {domain.skills.map((skill, index) => {
                   const isActive = activeSkill === skill.id
@@ -350,20 +331,13 @@ export default function ToolboxSchematic({ skills = staticSkills }: ToolboxSchem
                   )
                 })}
               </div>
-
-              {/* Bottom Output Port Terminal Block on Panel Boundary */}
-              <div className="panel-bottom-output-terminal mono" aria-hidden="true">
-                <span className="terminal-screw" />
-                <span className="terminal-label">OUT // CH_{dIndex + 1}</span>
-                <span className="terminal-screw" />
-              </div>
             </div>
 
             {/* Inter-Panel Junction Connectors */}
             {dIndex < domainPanels.length - 1 && (
               <div className="interpanel-junction-prong mono" aria-hidden="true">
                 <span className="prong-wire" />
-                <div className="terminal-plug">[ = BUS = ]</div>
+                <div className="terminal-plug" />
                 <span className="prong-wire" />
               </div>
             )}
@@ -387,17 +361,14 @@ export default function ToolboxSchematic({ skills = staticSkills }: ToolboxSchem
           <circle cx="833" cy="0" r="3.5" fill="#2b3b4c" />
           <circle cx="833" cy="45" r="3" fill="#2b3b4c" />
           <circle cx="590" cy="45" r="3" fill="#2b3b4c" />
-
-          <text x="250" y="36" fontFamily="var(--font-mono)" fontSize="11" fill="#58687a" letterSpacing="1" fontWeight="600">BUS_SIG_01:HW</text>
-          <text x="635" y="36" fontFamily="var(--font-mono)" fontSize="11" fill="#58687a" letterSpacing="1" fontWeight="600">BUS_SIG_03:AI</text>
         </svg>
 
         {/* 3. PHYSICAL INDUSTRIAL SYSTEM BUS MODULE / JUNCTION BOX */}
         <div className="industrial-system-bus-enclosure" aria-label="Central System Bus Industrial Module">
           <div className="bus-top-terminal-strip mono" aria-hidden="true">
-            <div className="terminal-socket"><span className="pin-screw" /><span>PORT_01: HW</span></div>
-            <div className="terminal-socket active-port"><span className="pin-screw" /><span>PORT_02: WEB</span></div>
-            <div className="terminal-socket"><span className="pin-screw" /><span>PORT_03: AI</span></div>
+            <div className="terminal-socket"><span className="pin-screw" /><span>HARDWARE</span></div>
+            <div className="terminal-socket active-port"><span className="pin-screw" /><span>WEB</span></div>
+            <div className="terminal-socket"><span className="pin-screw" /><span>AI / ML</span></div>
           </div>
 
           <div className="bus-chassis-faceplate">
@@ -407,10 +378,6 @@ export default function ToolboxSchematic({ skills = staticSkills }: ToolboxSchem
             <span className="chassis-bolt bottom-right" />
 
             <div className="chassis-header-row">
-              <div className="chassis-id mono">
-                <span className="tag-label">MOD-CORE</span>
-                <span className="tag-rev">REV 5.0</span>
-              </div>
               <div className="chassis-title-group">
                 <Zap className="chassis-bolt-icon" />
                 <h4 className="chassis-engraved-title mono">⚡ SYSTEM BUS</h4>
@@ -421,7 +388,7 @@ export default function ToolboxSchematic({ skills = staticSkills }: ToolboxSchem
               </div>
             </div>
 
-            <p className="hand chassis-quote">“Everything connects to ground eventually.”</p>
+            <p className="hand chassis-quote">“Building across hardware, interfaces, and machine learning.”</p>
           </div>
         </div>
       </div>

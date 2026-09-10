@@ -296,6 +296,7 @@ export default function BulletinBoard({ profile }: BulletinBoardProps) {
             <span className="note-drag-cue">
               <Move size={9} /> drag
             </span>
+            <span className="note-footer-sep" aria-hidden="true">/</span>
             <span className="note-link-cue">
               visit ↗
             </span>

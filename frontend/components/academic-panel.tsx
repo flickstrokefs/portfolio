@@ -36,19 +36,6 @@ export default function AcademicPanel({ academic }: AcademicPanelProps) {
 
   return (
     <div className="academic-dossier-wrapper" aria-label="Academic Dossier and Active Disciplines">
-      {/* Top Status Bar */}
-      <div className="dossier-status-bar mono">
-        <div className="status-left">
-          <span className="live-led" aria-hidden="true" />
-          <span className="telemetry-item">COORD. 31.25°N 75.70°E</span>
-          <span className="telemetry-sep">/</span>
-          <span className="telemetry-item highlight">REPORT ACTIVE</span>
-        </div>
-        <div className="status-right">
-          <span>ARCHIVE REF: {registrationCode} // CLASSIFIED RECORD</span>
-        </div>
-      </div>
-
       {/* Main Two-Zone Dossier Layout */}
       <div className="dossier-layout">
         {/* Zone 1: The Open Dossier Spread (Left ~65%) */}
@@ -221,14 +208,6 @@ export default function AcademicPanel({ academic }: AcademicPanelProps) {
                     <span className="gpa-max mono">/ <span className="coral-accent">{cgpaScale}</span></span>
                   </div>
                 </div>
-
-                <div className="gpa-vertical-divider" />
-
-                <div className="gpa-aside-block">
-                  <p className="hand gpa-aside-text">
-                    “steady output, minimal side effects”
-                  </p>
-                </div>
               </div>
             </div>
           </div>
@@ -238,7 +217,7 @@ export default function AcademicPanel({ academic }: AcademicPanelProps) {
         <div className="active-disciplines-column">
           <div className="disciplines-header-strip">
             <span className="mono disciplines-title">ACTIVE DISCIPLINES</span>
-            <span className="mono disciplines-load-tag">FULL LOAD: {disciplinesList.length}/{disciplinesList.length}</span>
+            <span className="mono disciplines-load-tag">{disciplinesList.length}/{disciplinesList.length}</span>
           </div>
 
           <div className="disciplines-tag-stack">
@@ -268,20 +247,6 @@ export default function AcademicPanel({ academic }: AcademicPanelProps) {
                 </motion.div>
               )
             })}
-          </div>
-
-          {/* Sticky Note & Field Reference below stack */}
-          <div className="stack-bottom-decorations">
-            <div className="disciplines-desk-note">
-              <div className="note-tape-strip" />
-              <p className="hand desk-note-text">“Cross-reference all findings against core principles.”</p>
-              <span className="mono desk-note-signature">— S/Lab desk</span>
-            </div>
-
-            <div className="field-id-tag-box mono">
-              <span className="field-tag-dot" />
-              <span>FIELD ID // 02-ACAD</span>
-            </div>
           </div>
         </div>
       </div>

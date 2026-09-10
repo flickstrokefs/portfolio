@@ -14,16 +14,26 @@ import {
   Sparkles,
   MapPin
 } from 'lucide-react'
+import { type Academic, staticAcademic } from '@/data/content'
 
-export default function FieldExpeditions() {
+interface FieldExpeditionsProps {
+  academic?: Academic
+}
+
+export default function FieldExpeditions({ academic }: FieldExpeditionsProps) {
   const [activeCard, setActiveCard] = useState<string | null>(null)
   const shouldReduceMotion = useReducedMotion()
+
+  const cgpaValue = academic?.cgpa !== undefined ? Number(academic.cgpa).toFixed(2) : String(staticAcademic.cgpa)
+  const cgpaScaleValue = (academic?.cgpaScale ?? academic?.cgpa_scale) !== undefined
+    ? Number(academic?.cgpaScale ?? academic?.cgpa_scale).toFixed(1)
+    : '10.0'
 
   return (
     <div className="expeditions-scrapbook-root" aria-label="Field Expeditions Scrapbook">
       {/* Editorial Section Subheader Kicker */}
       <div className="expeditions-header-meta mono">
-        <span className="meta-tag">[ EXPEDITIONS LOG // VOL. 06 ]</span>
+        <span className="meta-tag">[ FIELD EXPEDITIONS ]</span>
         <span className="meta-sub">EXPERIENCES, COMPETITIONS, ACHIEVEMENTS &amp; CREDENTIALS</span>
       </div>
 
@@ -46,16 +56,16 @@ export default function FieldExpeditions() {
             <div className="timeline-node">
               <span className="node-dot">02</span>
               <div className="node-info">
-                <span className="node-date">2026.01 – 03</span>
-                <span className="node-label">WATER MANAGEMENT</span>
+                <span className="node-date">2026.01</span>
+                <span className="node-label">WATER TELEMETRY</span>
               </div>
             </div>
 
             <div className="timeline-node">
-              <span className="node-dot highlight">03</span>
+              <span className="node-dot">03</span>
               <div className="node-info">
                 <span className="node-date">2026.03</span>
-                <span className="node-label">IIT MANDI ROCKETRY</span>
+                <span className="node-label">ROCKETRY RUNNER-UP</span>
               </div>
             </div>
 
@@ -63,67 +73,57 @@ export default function FieldExpeditions() {
               <span className="node-dot">04</span>
               <div className="node-info">
                 <span className="node-date">2026.05</span>
-                <span className="node-label">NEUROLEAN AI</span>
+                <span className="node-label">NEUROLEAN PLATFORM</span>
               </div>
             </div>
 
             <div className="timeline-node">
-              <span className="node-dot highlight">05</span>
+              <span className="node-dot">05</span>
               <div className="node-info">
                 <span className="node-date">2026.06</span>
-                <span className="node-label">WALL-E LINE ROBOT</span>
+                <span className="node-label">WALL-E ROBOTICS</span>
               </div>
             </div>
 
             <div className="timeline-node">
               <span className="node-dot">06</span>
               <div className="node-info">
-                <span className="node-date">PRESENT</span>
-                <span className="node-label">LEADERSHIP DOSSIER</span>
-              </div>
-            </div>
-
-            <div className="timeline-node">
-              <span className="node-dot highlight">07</span>
-              <div className="node-info">
-                <span className="node-date">VERIFIED</span>
-                <span className="node-label">CREDENTIALS CLUSTER</span>
+                <span className="node-date">ONGOING</span>
+                <span className="node-label">ROLES &amp; CREDENTIALS</span>
               </div>
             </div>
           </div>
         </aside>
 
-        {/* ── MAIN SCRAPBOOK CANVAS (3 Columns on Desktop, 1 on Mobile) ── */}
-        <div className="scrapbook-canvas-board">
+
+        {/* ── RIGHT SCRAPBOOK BOARD (The Physical Collage) ── */}
+        <div className="expeditions-board-surface">
+          
+          {/* Subtle Desk Texture & Guide Grid */}
+          <div className="board-grid-pattern" aria-hidden="true" />
+
+          {/* Sticky Desk Note */}
+          <div className="board-sticky-note hand" aria-hidden="true">
+            <div className="note-pin" />
+            <p>“Engineering happens where code touches physics.”</p>
+            <span className="mono signature">— S/Lab desk</span>
+          </div>
 
           {/* ════════════════════════════════════════════════════════════
               01 / ACADEMIC JOURNEY — B.Tech Journey Begins (Polaroid + Paper)
               ════════════════════════════════════════════════════════════ */}
           <motion.div
-            className="scrapbook-card card-academic card-paper card-rot-neg1 cursor-target"
+            className="scrapbook-card card-academic-polaroid card-rot-neg1 cursor-target"
             whileHover={shouldReduceMotion ? {} : { y: -5, rotate: 0, scale: 1.01 }}
             transition={{ duration: 0.2 }}
             onMouseEnter={() => setActiveCard('card-01')}
             onMouseLeave={() => setActiveCard(null)}
           >
-            {/* Brass Paperclip */}
+            {/* Top Wire Paperclip */}
             <div className="card-fixture-paperclip top-left" aria-hidden="true">
               <svg viewBox="0 0 28 72" width="18" height="48" fill="none" stroke="#7e7663" strokeWidth="2.4" strokeLinecap="round">
                 <path d="M 14,8 L 14,54 C 14,62 6,62 6,54 L 6,18 C 6,10 22,10 22,18 L 22,56 C 22,68 2,68 2,56 L 2,24" />
               </svg>
-            </div>
-
-            {/* Circular Stamp Badge */}
-            <div className="stamp-badge-round red" aria-label="Learn Build Impact Stamp">
-              <svg viewBox="0 0 100 100" className="stamp-svg">
-                <path id="stamp-curve-1" d="M 18,50 A 32,32 0 1,1 82,50 A 32,32 0 1,1 18,50" fill="none" />
-                <text className="stamp-text mono" fontSize="9.5" fill="#a6312f" letterSpacing="0.14em">
-                  <textPath href="#stamp-curve-1" startOffset="50%" textAnchor="middle">
-                    ★ LEARN · BUILD · IMPACT ★
-                  </textPath>
-                </text>
-              </svg>
-              <span className="stamp-inner-code mono">LPU</span>
             </div>
 
             <div className="card-header mono">
@@ -140,7 +140,7 @@ export default function FieldExpeditions() {
 
             <div className="card-stats-pill mono">
               <span>CUMULATIVE CGPA</span>
-              <strong>9.26 / 10.0</strong>
+              <strong>{cgpaValue} / {cgpaScaleValue}</strong>
             </div>
 
             {/* Mini Campus Polaroid Frame */}
@@ -148,7 +148,6 @@ export default function FieldExpeditions() {
               <div className="polaroid-image-slot slot-campus">
                 <div className="slot-grid-mesh" />
                 <MapPin size={24} className="slot-icon" />
-                <span className="slot-label mono">CAMPUS SPECIMEN // LPU</span>
               </div>
               <span className="polaroid-caption hand">“Foundation for heavy engineering.”</span>
             </div>
@@ -189,10 +188,6 @@ export default function FieldExpeditions() {
 
             {/* Live-style Sensor Telemetry Readout Box */}
             <div className="mock-sensor-panel mono">
-              <div className="sensor-panel-header">
-                <span className="led-sensor-active" />
-                <span>FIELD TELEMETRY // TELEM_02</span>
-              </div>
               <div className="sensor-metrics-grid">
                 <div className="sensor-readout">
                   <span className="sensor-label">SOIL MOISTURE</span>
@@ -242,7 +237,7 @@ export default function FieldExpeditions() {
 
             <h3 className="card-title serif">IIT Mandi Rocketry Competition</h3>
 
-            {/* Main Polaroid Specimen Photo */}
+            {/* Main Polaroid Photo Box */}
             <div className="polaroid-photo-box">
               <div className="polaroid-screen slot-rocket">
                 <div className="slot-grid-mesh" />
@@ -251,10 +246,6 @@ export default function FieldExpeditions() {
                   <span>ALT: 420m</span>
                   <span>BURNOUT: 2.4s</span>
                 </div>
-              </div>
-              <div className="polaroid-footer-strip mono">
-                <span>SPECIMEN_ID: ROCKET_STAGE_01</span>
-                <span>VERIFIED RUN</span>
               </div>
             </div>
 
@@ -359,7 +350,7 @@ export default function FieldExpeditions() {
               <div className="polaroid-screen slot-robot">
                 <div className="slot-grid-mesh" />
                 <Bot size={30} className="slot-icon" />
-                <span className="slot-label mono">CHASSIS REV_2 // 8-SENSOR ARRAY</span>
+                <span className="slot-label mono">8-SENSOR ARRAY</span>
               </div>
             </div>
 
@@ -383,14 +374,8 @@ export default function FieldExpeditions() {
             onMouseEnter={() => setActiveCard('card-06')}
             onMouseLeave={() => setActiveCard(null)}
           >
-            {/* Wax Seal Stamp */}
-            <div className="dossier-verified-stamp mono" aria-label="Official Verified Record Stamp">
-              <span>OFFICIAL DOSSIER</span>
-              <strong>VERIFIED</strong>
-            </div>
-
             <div className="card-header mono">
-              <span className="card-idx">06 / ARCHIVAL RECORD</span>
+              <span className="card-idx">06 / APPOINTMENTS</span>
               <span className="card-date">CONTINUOUS</span>
             </div>
 
@@ -449,18 +434,19 @@ export default function FieldExpeditions() {
                     <strong className="record-role">Runner-Up</strong>
                     <span className="record-timeline mono">Mar 2026</span>
                   </div>
-                  <span className="record-org mono">IIT Mandi National Rocketry Championship</span>
+                  <span className="record-org mono">IIT Mandi Rocketry Competition</span>
                 </div>
               </div>
             </div>
           </motion.div>
 
+
           {/* ════════════════════════════════════════════════════════════
-              07 / CREDENTIALS & APPOINTMENTS (Merged 4-Card Cluster)
+              07 / INTEGRATED CREDENTIALS CLUSTER
               ════════════════════════════════════════════════════════════ */}
           <div className="scrapbook-credentials-cluster">
             <div className="credentials-cluster-header mono">
-              <span className="cluster-tag">[ CREDENTIALS &amp; APPOINTMENTS // VERIFIED REPUTATION ]</span>
+              <span className="cluster-tag">[ CREDENTIALS &amp; APPOINTMENTS ]</span>
               <span className="cluster-sub">INSTITUTIONAL MEMBERSHIPS &amp; RECOGNITION</span>
             </div>
 
@@ -474,7 +460,6 @@ export default function FieldExpeditions() {
                 <div className="badge-fixture-pin" aria-hidden="true" />
                 <div className="badge-header mono">
                   <span className="badge-code">CRED-01</span>
-                  <span className="badge-stamp">VERIFIED</span>
                 </div>
                 <div className="badge-body">
                   <div className="badge-icon-box">
@@ -500,7 +485,6 @@ export default function FieldExpeditions() {
                 <div className="badge-fixture-tape" aria-hidden="true" />
                 <div className="badge-header mono">
                   <span className="badge-code">CRED-02</span>
-                  <span className="badge-stamp">VERIFIED</span>
                 </div>
                 <div className="badge-body">
                   <div className="badge-icon-box">
@@ -526,7 +510,6 @@ export default function FieldExpeditions() {
                 <div className="badge-fixture-pin pin-blue" aria-hidden="true" />
                 <div className="badge-header mono">
                   <span className="badge-code">CRED-03</span>
-                  <span className="badge-stamp">VERIFIED</span>
                 </div>
                 <div className="badge-body">
                   <div className="badge-icon-box">
@@ -538,7 +521,7 @@ export default function FieldExpeditions() {
                   </div>
                 </div>
                 <div className="badge-footer mono">
-                  <span>STATUS: VERIFIED</span>
+                  <span>STATUS: ACTIVE</span>
                   <span className="badge-led" />
                 </div>
               </motion.div>
@@ -552,7 +535,6 @@ export default function FieldExpeditions() {
                 <div className="badge-fixture-tape right" aria-hidden="true" />
                 <div className="badge-header mono">
                   <span className="badge-code">CRED-04</span>
-                  <span className="badge-stamp">VERIFIED</span>
                 </div>
                 <div className="badge-body">
                   <div className="badge-icon-box">
@@ -585,10 +567,6 @@ export default function FieldExpeditions() {
           <span className="quote-dash mono">—</span>
           <em>Every experiment teaches. Every challenge builds.</em>
           <span className="quote-dash mono">—</span>
-        </div>
-
-        <div className="footer-right-code mono">
-          <span>FIELD LOG // 06 COMPLETE</span>
         </div>
       </div>
     </div>

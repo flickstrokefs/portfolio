@@ -44,7 +44,7 @@ export default function ExperimentArchive({ projects }: { projects: Project[] })
       <div className="archive-workbench-header mono">
         <div className="workbench-status">
           <span className="archive-dot" />
-          <span>CABINET: SPECIMEN LOGS // VOL. 04</span>
+          <span>PROJECT ARCHIVE</span>
         </div>
         <div className="workbench-actions">
           <span>{selectedId ? 'CASE FILE OPEN FOR INSPECTION' : 'CLICK OR TAP ANY CASE FILE TO OPEN SPREAD'}</span>

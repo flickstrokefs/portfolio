@@ -261,7 +261,7 @@ export function LabNotebook() {
       </Section>
 
       <Section id="achievements" label="06 / FIELD EXPEDITIONS" title="Outside the classroom">
-        <FieldExpeditions />
+        <FieldExpeditions academic={academicData} />
       </Section>
 
       <Section id="roadmap" label="07 / FUTURE TRAJECTORY" title="The route is still being drawn." blueprint>
@@ -285,7 +285,7 @@ export function LabNotebook() {
             <label>Name<input name="name" required placeholder="Your name" /></label>
             <label>Email<input name="email" type="email" required placeholder="you@example.com" /></label>
             <label>Message<textarea name="message" required rows={4} placeholder="What are we making?" /></label>
-            <button type="submit"><Send /> {status || 'SEND TRANSMISSION'}</button>
+            <button type="submit"><Send /> {status || 'Send message'}</button>
             <span className="mono form-status" role="status">{status && <><Radio /> {status}</>}</span>
           </form>
         </div>
